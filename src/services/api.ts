@@ -8,6 +8,30 @@
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:4300';
 
+export class ApiRequestError extends Error {
+  status: number;
+  code?: string;
+  details?: unknown;
+  traceId?: string;
+
+  constructor(
+    message: string,
+    options: {
+      status: number;
+      code?: string;
+      details?: unknown;
+      traceId?: string;
+    },
+  ) {
+    super(message);
+    this.name = 'ApiRequestError';
+    this.status = options.status;
+    this.code = options.code;
+    this.details = options.details;
+    this.traceId = options.traceId;
+  }
+}
+
 // ── 后端返回的原始数据类型 ────────────────────────────────────────
 
 export type ApiSubmission = {
@@ -95,22 +119,66 @@ export type GenerateCraftPlanResponse = {
   pipeline: Record<string, string>;
 };
 
+export type ApiBootstrapPayload = {
+  home: {
+    heroTitle: string;
+    heroSummary: string;
+    supportedCrafts: Array<{ id: string; label: string }>;
+  };
+  publishForm: {
+    maxImages: number;
+    supportedCrafts: Array<{ id: string; label: string }>;
+    budgetHints: string[];
+    deliveryHints: string[];
+  };
+};
+
+export type ApiUploadResponse = {
+  url: string;
+};
+
+export type ClientErrorEnvelope = {
+  category: string;
+  message: string;
+  source: string;
+  screenName?: string;
+  traceId?: string;
+  details?: Record<string, unknown>;
+};
+
 // ── 核心 fetch 封装 ───────────────────────────────────────────────
 
-async function request<T>(path: string, options?: RequestInit): Promise<T> {
+async function request<T>(
+  path: string,
+  options?: RequestInit & { unwrapData?: boolean },
+): Promise<T> {
+  const { unwrapData = true, ...requestOptions } = options ?? {};
+  const body = requestOptions.body;
+  const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
+
+  const headers = isFormData
+    ? requestOptions.headers
+    : { 'Content-Type': 'application/json', ...requestOptions.headers };
+
   const res = await fetch(`${BASE_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    ...options,
+    ...requestOptions,
+    headers,
   });
 
-  const json = await res.json();
+  const text = await res.text();
+  const json = text ? JSON.parse(text) : null;
 
   if (!res.ok) {
     const msg = json?.error?.message ?? `请求失败 (${res.status})`;
-    throw new Error(msg);
+    throw new ApiRequestError(msg, {
+      status: res.status,
+      code: json?.error?.code,
+      details: json?.error?.details,
+      traceId: json?.error?.traceId,
+    });
   }
 
-  return json.data as T;
+  return (unwrapData ? json?.data : json) as T;
 }
 
 // ── 对外暴露的 API 方法 ───────────────────────────────────────────
@@ -118,7 +186,26 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 export const api = {
   /** 健康检查 */
   health: () =>
-    request<{ status: string }>('/health'),
+    request<{ status: string; traceId: string }>('/health', { unwrapData: false }),
+
+  /** 启动数据 */
+  getBootstrap: () =>
+    request<ApiBootstrapPayload>('/v1/bootstrap'),
+
+  /** 上传单张图片 */
+  uploadImage: (file: { uri: string; name?: string; type?: string }) => {
+    const formData = new FormData();
+    formData.append('file', {
+      uri: file.uri,
+      name: file.name ?? 'upload.jpg',
+      type: file.type ?? 'image/jpeg',
+    } as never);
+
+    return request<ApiUploadResponse>('/v1/uploads', {
+      method: 'POST',
+      body: formData,
+    });
+  },
 
   /** 提交需求 → 返回 submission + structuredRequirement */
   submitRequirement: (payload: {
@@ -147,4 +234,11 @@ export const api = {
   /** 获取传承人匹配列表 */
   getArtisanMatches: (planId: string) =>
     request<ApiArtisanMatch[]>(`/v1/craft-plans/${planId}/matches`),
+
+  /** 客户端错误上报 */
+  reportClientError: (payload: ClientErrorEnvelope) =>
+    request<{ accepted: boolean }>('/v1/client-errors', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
 };

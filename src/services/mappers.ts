@@ -10,14 +10,41 @@ import type {
   ApiArtisanMatch,
   ApiCraftPlan,
   ApiDesignConfirmation,
+  ApiPreviewResult,
   ApiStructuredRequirement,
 } from './api';
 import type {
   CraftPlanData,
   DesignConfirmScreenData,
   MatchScreenData,
+  PreviewScreenData,
   StructuredResultData,
 } from '../types';
+
+const craftLabels: Record<string, string> = {
+  'tie-dye': '扎染',
+  'su-embroidery': '苏绣',
+  silver: '银饰',
+};
+
+function getCraftLabel(value: string) {
+  return craftLabels[value] ?? value;
+}
+
+function isRenderableImageUrl(url: string | undefined) {
+  if (!url) {
+    return false;
+  }
+
+  return (
+    url.startsWith('http://') ||
+    url.startsWith('https://') ||
+    url.startsWith('file://') ||
+    url.startsWith('content://') ||
+    url.startsWith('data:') ||
+    url.startsWith('asset://')
+  );
+}
 
 // ── CraftPlan ─────────────────────────────────────────────────────
 
@@ -58,7 +85,7 @@ export function mapStructuredRequirement(req: ApiStructuredRequirement): Structu
     headerSubtitle: '系统已把你的描述整理成可执行方向',
     badgeLabel: '需求确认',
     summary: `${req.category} · ${req.style}`,
-    summaryNote: `工艺偏好：${req.craftPreference}`,
+    summaryNote: `工艺偏好：${getCraftLabel(req.craftPreference)}`,
     keyInfoTitle: '核心参数',
     keyInfo: [
       { id: 'kv-material', label: '面料偏好', value: req.materialPreference },
@@ -68,7 +95,7 @@ export function mapStructuredRequirement(req: ApiStructuredRequirement): Structu
       { id: 'kv-variance', label: '手作差异接受度', value: req.acceptableVariance },
     ],
     focusTitle: '重点方向',
-    focusItems: [req.style, req.craftPreference, req.materialPreference].filter(Boolean),
+    focusItems: [req.style, getCraftLabel(req.craftPreference), req.materialPreference].filter(Boolean),
     confirmTitle: '系统理解确认',
     confirmText: req.acceptsModification
       ? '系统会在这个方向上生成工艺方案，如有偏差可以返回调整。'
@@ -76,6 +103,57 @@ export function mapStructuredRequirement(req: ApiStructuredRequirement): Structu
     ctaLabel: '查看工艺方案',
     footerNote: '方案会在下一页详细展开，包括工艺逻辑、风险和价格区间。',
   };
+}
+
+// ── PreviewResult ──────────────────────────────────────────────────
+
+export function mapPreviewResult(
+  preview: ApiPreviewResult,
+  plan: ApiCraftPlan,
+): PreviewScreenData {
+  const leadCaption = preview.previewImages.find((item) => item.caption)?.caption;
+  const hasPreview = preview.previewImages.some((item) => isRenderableImageUrl(item.url));
+
+  return {
+    headerTitle: '方向预览',
+    headerSubtitle: '先看成品气质和细节方向，不是最终交付承诺',
+    badgeLabel: hasPreview ? '预览结果' : '预览待补全',
+    heroTitle: `${plan.recommendedCraft} · 方向预览`,
+    heroNote:
+      leadCaption ??
+      (preview.status === 'pending_generation'
+        ? '后端还在补最终预览，当前先给你看可用的方向参考。'
+        : '当前先展示后端返回的预览结果，用来帮助理解方向。'),
+    noticeTitle: '重要说明',
+    noticeText:
+      '仅供方向参考，不承诺与成品完全一致。真实成品会受面料、手工密度、染绣细节和打样结果影响。',
+    actions: [
+      {
+        id: 'preview-plan',
+        title: hasPreview ? '当前预览已就绪' : '预览结果仍在补齐',
+        description: preview.description,
+      },
+      {
+        id: 'preview-source',
+        title: '继续看匹配结果',
+        description: '平台会结合工艺、风格、价格和周期继续往下筛。',
+      },
+    ],
+    ctaLabel: '进入匹配结果',
+    footerNote: hasPreview
+      ? '这是后端返回的当前可用预览结果。'
+      : '后端暂时没有可直接展示的预览图，当前先用可用参考图兜底。',
+  };
+}
+
+export function getPreviewImageUri(preview: ApiPreviewResult): string | undefined {
+  const previewImage = preview.previewImages.find((item) => isRenderableImageUrl(item.url));
+  if (previewImage) {
+    return previewImage.url;
+  }
+
+  const sourceImage = preview.sourceImages.find((item) => isRenderableImageUrl(item.url));
+  return sourceImage?.url;
 }
 
 // ── ArtisanMatches ────────────────────────────────────────────────

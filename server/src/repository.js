@@ -7,7 +7,7 @@
  * 注意：所有方法均为 async，调用方需要 await。
  */
 
-import { getDb } from './db.js';
+import { getDb, resetTestDb } from './db.js';
 
 // ─────────────────────────────────────────
 // Submission
@@ -160,3 +160,7 @@ export async function saveConfirmation(data) {
     },
   });
 }
+
+export const repository = {
+  reset: resetTestDb,
+};
