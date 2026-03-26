@@ -27,6 +27,7 @@ export function ProfileScreen({
         title={data.headerTitle}
         subtitle={data.headerSubtitle}
         badge={data.badgeLabel}
+        showProfileIllustration
       />
 
       <ProfileStatusHero

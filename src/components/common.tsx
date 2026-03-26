@@ -22,7 +22,8 @@ import type { MainTabId } from '../types'
 
 const publishHeaderFigure = require('../../assets/illustrations/dz-hero.png')
 const publishHeaderFlowers = require('../../assets/illustrations/huaban.jpeg')
-const conversationHeaderFigure = require('../../assets/illustrations/email.png')
+const conversationHeaderFigure = require('../../assets/illustrations/email-girl.jpeg')
+const profileHeaderFigure = require('../../assets/bar/profile.png')
 const mainTabIcons = {
     home: require('../../assets/bar/home.png'),
     custom: require('../../assets/bar/icon-flower.jpeg'),
@@ -318,12 +319,8 @@ export function MainTabBar({
                                 source={mainTabIcons[typedId]}
                                 style={[
                                     styles.tabIconImage,
-                                    compact
-                                        ? styles.tabIconImageCompact
-                                        : null,
-                                    active
-                                        ? styles.tabIconImageActive
-                                        : null,
+                                    compact ? styles.tabIconImageCompact : null,
+                                    active ? styles.tabIconImageActive : null,
                                 ]}
                             />
                         </View>
@@ -354,6 +351,7 @@ export function PageHeaderCard({
     animatedHero = false,
     showPublishIllustration = false,
     showConversationIllustration = false,
+    showProfileIllustration = false,
 }: {
     title: string
     subtitle: string
@@ -365,6 +363,7 @@ export function PageHeaderCard({
     animatedHero?: boolean
     showPublishIllustration?: boolean
     showConversationIllustration?: boolean
+    showProfileIllustration?: boolean
 }) {
     const titlePlatePulse = useRef(new Animated.Value(0)).current
     const glowFloat = useRef(new Animated.Value(0)).current
@@ -372,8 +371,7 @@ export function PageHeaderCard({
     const flowerMotion = useRef(new Animated.Value(0)).current
     const publishGlowPulse = useRef(new Animated.Value(0)).current
     const conversationFigureFloat = useRef(new Animated.Value(0)).current
-    const hasIllustration =
-        showPublishIllustration || showConversationIllustration
+    const profileFigureFloat = useRef(new Animated.Value(0)).current
 
     useEffect(() => {
         if (!animatedHero) {
@@ -513,6 +511,34 @@ export function PageHeaderCard({
         return () => conversationLoop.stop()
     }, [conversationFigureFloat, showConversationIllustration])
 
+    useEffect(() => {
+        if (!showProfileIllustration) {
+            profileFigureFloat.setValue(0)
+            return
+        }
+
+        const profileLoop = Animated.loop(
+            Animated.sequence([
+                Animated.timing(profileFigureFloat, {
+                    toValue: 1,
+                    duration: 3600,
+                    easing: Easing.inOut(Easing.sin),
+                    useNativeDriver: true,
+                }),
+                Animated.timing(profileFigureFloat, {
+                    toValue: 0,
+                    duration: 3600,
+                    easing: Easing.inOut(Easing.sin),
+                    useNativeDriver: true,
+                }),
+            ]),
+        )
+
+        profileLoop.start()
+
+        return () => profileLoop.stop()
+    }, [profileFigureFloat, showProfileIllustration])
+
     const titlePlateStyle: any = animatedHero
         ? {
               opacity: titlePlatePulse.interpolate({
@@ -552,44 +578,44 @@ export function PageHeaderCard({
               ],
           }
         : animatedHero
-        ? {
-              transform: [
-                  {
-                      translateY: glowFloat.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: [0, -10],
-                      }),
-                  },
-                  {
-                      scale: glowFloat.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: [1, 1.085],
-                      }),
-                  },
-              ],
-          }
-        : showPublishIllustration
           ? {
-                opacity: publishGlowPulse.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [0.88, 1],
-                }),
                 transform: [
                     {
-                        translateY: publishGlowPulse.interpolate({
+                        translateY: glowFloat.interpolate({
                             inputRange: [0, 1],
-                            outputRange: [0, -5],
+                            outputRange: [0, -10],
                         }),
                     },
                     {
-                        scale: publishGlowPulse.interpolate({
+                        scale: glowFloat.interpolate({
                             inputRange: [0, 1],
-                            outputRange: [1, 1.06],
+                            outputRange: [1, 1.085],
                         }),
                     },
                 ],
             }
-        : null
+          : showPublishIllustration
+            ? {
+                  opacity: publishGlowPulse.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0.88, 1],
+                  }),
+                  transform: [
+                      {
+                          translateY: publishGlowPulse.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: [0, -5],
+                          }),
+                      },
+                      {
+                          scale: publishGlowPulse.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: [1, 1.06],
+                          }),
+                      },
+                  ],
+              }
+            : null
 
     const badgeMotionStyle: any = animatedHero
         ? {
@@ -665,12 +691,27 @@ export function PageHeaderCard({
           }
         : null
 
+    const profileFigureMotionStyle: any = showProfileIllustration
+        ? {
+              transform: [
+                  {
+                      translateY: profileFigureFloat.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [1, -4],
+                      }),
+                  },
+              ],
+          }
+        : null
+
     const headerIllustrationSource: ImageSourcePropType | null =
         showPublishIllustration
             ? publishHeaderFigure
             : showConversationIllustration
               ? conversationHeaderFigure
-              : null
+              : showProfileIllustration
+                ? profileHeaderFigure
+                : null
 
     return (
         <View style={[styles.pageHeaderCard, style]}>
@@ -687,11 +728,14 @@ export function PageHeaderCard({
             <View style={styles.pageHeaderCloud} />
             {headerIllustrationSource ? (
                 <View
-                        pointerEvents="none"
-                        style={[
-                            styles.pageHeaderIllustrationScene,
-                            showConversationIllustration
-                                ? styles.pageHeaderIllustrationSceneConversation
+                    pointerEvents="none"
+                    style={[
+                        styles.pageHeaderIllustrationScene,
+                        showConversationIllustration
+                            ? styles.pageHeaderIllustrationSceneConversation
+                            : null,
+                        showProfileIllustration
+                            ? styles.pageHeaderIllustrationSceneProfile
                             : null,
                     ]}
                 >
@@ -718,6 +762,12 @@ export function PageHeaderCard({
                                       conversationFigureMotionStyle,
                                   ]
                                 : null,
+                            showProfileIllustration
+                                ? [
+                                      styles.pageHeaderFigureWrapProfile,
+                                      profileFigureMotionStyle,
+                                  ]
+                                : null,
                         ]}
                     >
                         <Image
@@ -727,6 +777,9 @@ export function PageHeaderCard({
                                 styles.pageHeaderFigureImage,
                                 showConversationIllustration
                                     ? styles.pageHeaderFigureImageConversation
+                                    : null,
+                                showProfileIllustration
+                                    ? styles.pageHeaderFigureImageProfile
                                     : null,
                             ]}
                         />
@@ -775,7 +828,9 @@ export function PageHeaderCard({
                             ? styles.pageHeaderTitleWithArt
                             : showConversationIllustration
                               ? styles.pageHeaderTitleWithConversationArt
-                              : null,
+                              : showProfileIllustration
+                                ? styles.pageHeaderTitleWithProfileArt
+                                : null,
                     ]}
                 >
                     {title}
@@ -787,7 +842,9 @@ export function PageHeaderCard({
                             ? styles.pageHeaderSubtitleWithArt
                             : showConversationIllustration
                               ? styles.pageHeaderSubtitleWithConversationArt
-                              : null,
+                              : showProfileIllustration
+                                ? styles.pageHeaderSubtitleWithProfileArt
+                                : null,
                     ]}
                 >
                     {subtitle}
@@ -1079,11 +1136,11 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(255,232,184,0.5)',
     },
     pageHeaderGlowConversation: {
-        right: 20,
-        top: 34,
-        width: 116,
-        height: 116,
-        borderRadius: 58,
+        right: 12,
+        top: 28,
+        width: 128,
+        height: 128,
+        borderRadius: 64,
         backgroundColor: 'rgba(255,232,184,0.34)',
     },
     pageHeaderCloud: {
@@ -1103,11 +1160,17 @@ const styles = StyleSheet.create({
         height: 196,
     },
     pageHeaderIllustrationSceneConversation: {
-        right: 10,
-        top: 18,
-        width: 196,
-        height: 148,
+        right: -10,
+        top: 2,
+        width: 208,
+        height: 208,
         zIndex: 1,
+    },
+    pageHeaderIllustrationSceneProfile: {
+        right: -8,
+        bottom: -2,
+        width: 194,
+        height: 168,
     },
     pageHeaderFlowerWrap: {
         position: 'absolute',
@@ -1128,18 +1191,34 @@ const styles = StyleSheet.create({
         height: 186,
     },
     pageHeaderFigureWrapConversation: {
-        ...StyleSheet.absoluteFillObject,
+        top: -8,
+        right: -18,
+        width: 228,
+        height: 228,
+    },
+    pageHeaderFigureWrapProfile: {
+        right: -2,
+        bottom: -4,
+        width: 176,
+        height: 164,
     },
     pageHeaderFigureImage: {
         width: '100%',
         height: '100%',
     },
     pageHeaderFigureImageConversation: {
+        width: '116%',
+        height: '116%',
+        marginLeft: -14,
+        marginTop: -12,
         opacity: 1,
         shadowColor: 'rgba(142,101,76,0.18)',
         shadowOffset: { width: 0, height: 10 },
         shadowOpacity: 1,
         shadowRadius: 18,
+    },
+    pageHeaderFigureImageProfile: {
+        opacity: 0.98,
     },
     pageHeaderTop: {
         flexDirection: 'row',
@@ -1193,7 +1272,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(255,255,255,0.92)',
     },
     pageHeaderTitlePlateConversation: {
-        width: '56%',
+        width: '54%',
     },
     pageHeaderTitle: {
         fontSize: 30,
@@ -1204,7 +1283,10 @@ const styles = StyleSheet.create({
         maxWidth: '58%',
     },
     pageHeaderTitleWithConversationArt: {
-        maxWidth: '50%',
+        maxWidth: '44%',
+    },
+    pageHeaderTitleWithProfileArt: {
+        maxWidth: '56%',
     },
     pageHeaderSubtitle: {
         fontSize: 15,
@@ -1215,6 +1297,9 @@ const styles = StyleSheet.create({
         maxWidth: '54%',
     },
     pageHeaderSubtitleWithConversationArt: {
-        maxWidth: '46%',
+        maxWidth: '40%',
+    },
+    pageHeaderSubtitleWithProfileArt: {
+        maxWidth: '52%',
     },
 })

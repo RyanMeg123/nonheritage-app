@@ -1,7 +1,11 @@
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
+
 import { PrismaClient } from './generated/prisma/index.js';
 
 // 单例：避免开发热重载时创建多个连接
 let _client;
+let _pool;
 let _testDb;
 
 function createTestDbState() {
@@ -108,7 +112,18 @@ export function getDb() {
   }
 
   if (!_client) {
+    if (!process.env.DATABASE_URL) {
+      throw new Error('DATABASE_URL 未配置，无法初始化数据库连接。');
+    }
+
+    if (!_pool) {
+      _pool = new Pool({
+        connectionString: process.env.DATABASE_URL,
+      });
+    }
+
     _client = new PrismaClient({
+      adapter: new PrismaPg(_pool),
       log: process.env.NODE_ENV === 'development' ? ['query', 'warn', 'error'] : ['warn', 'error'],
     });
   }
@@ -124,6 +139,11 @@ export async function disconnectDb() {
   if (_client) {
     await _client.$disconnect();
     _client = undefined;
+  }
+
+  if (_pool) {
+    await _pool.end();
+    _pool = undefined;
   }
 }
 

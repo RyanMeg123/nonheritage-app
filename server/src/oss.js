@@ -13,11 +13,17 @@ import { randomUUID } from 'node:crypto';
 import OSS from 'ali-oss';
 
 let _client;
+let _usingMockUpload = false;
+
+function hasOssConfig() {
+  const { OSS_REGION, OSS_ACCESS_KEY_ID, OSS_ACCESS_KEY_SECRET, OSS_BUCKET } = process.env;
+  return Boolean(OSS_REGION && OSS_ACCESS_KEY_ID && OSS_ACCESS_KEY_SECRET && OSS_BUCKET);
+}
 
 function getOssClient() {
   if (!_client) {
     const { OSS_REGION, OSS_ACCESS_KEY_ID, OSS_ACCESS_KEY_SECRET, OSS_BUCKET } = process.env;
-    if (!OSS_REGION || !OSS_ACCESS_KEY_ID || !OSS_ACCESS_KEY_SECRET || !OSS_BUCKET) {
+    if (!hasOssConfig()) {
       throw new Error('OSS 环境变量未配置：OSS_REGION / OSS_ACCESS_KEY_ID / OSS_ACCESS_KEY_SECRET / OSS_BUCKET');
     }
     _client = new OSS({
@@ -42,6 +48,14 @@ function getOssClient() {
 export async function uploadBuffer(buffer, mimeType, folder = 'uploads') {
   const ext = mimeType.split('/')[1] ?? 'bin';
   const objectKey = `${folder}/${randomUUID()}.${ext}`;
+
+  if (!hasOssConfig() && process.env.NODE_ENV !== 'production') {
+    if (!_usingMockUpload) {
+      console.warn('[uploadBuffer] OSS 未配置，开发环境回退为 mock URL。');
+      _usingMockUpload = true;
+    }
+    return `mock:///${objectKey}`;
+  }
 
   const client = getOssClient();
   await client.put(objectKey, buffer, {

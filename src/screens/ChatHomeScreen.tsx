@@ -39,6 +39,7 @@ export function ChatHomeScreen({
         title={data.headerTitle}
         subtitle={data.headerSubtitle}
         badge={data.badgeLabel}
+        showConversationIllustration
       />
 
       <ChatVersionAnchor

@@ -103,7 +103,7 @@ export async function savePreview(data) {
     data: {
       id: data.id,
       submissionId: data.submissionId,
-      planId: data.planId ?? data.submissionId,
+      planId: data.planId,
       sourceImages: data.sourceImages,
       previewImages: data.previewImages,
       description: data.description,

@@ -80,10 +80,11 @@ export function buildCraftPlan(submission, structuredRequirement) {
   };
 }
 
-export function buildPreviewResult(submission) {
+export function buildPreviewResult(submission, plan) {
   return {
     id: `preview-${submission.id}`,
     submissionId: submission.id,
+    planId: plan.id,
     sourceImages: submission.images,
     previewImages: [
       {
