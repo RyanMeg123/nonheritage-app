@@ -266,6 +266,7 @@ export function PublishScreen({
         subtitle={headerCopy.subtitle}
         badge={headerCopy.badge}
         onBack={onBack}
+        showPublishIllustration
       />
 
       <PublishModeSwitcher selectedMode={formState.entryMode} onSelect={selectMode} />

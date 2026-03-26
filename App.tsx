@@ -1,8 +1,9 @@
 import { StatusBar } from 'expo-status-bar';
 import { startTransition, useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, SafeAreaView, StyleSheet, View } from 'react-native';
+import { Alert, SafeAreaView, StyleSheet, View } from 'react-native';
 
 import { homeData, publishPreset } from './src/data/mockData';
+import { PublishProcessingState } from './src/features/publish/components/PublishProcessingState';
 import { ArtisanOnboardingScreen } from './src/screens/ArtisanOnboardingScreen';
 import { ChatHomeScreen } from './src/screens/ChatHomeScreen';
 import { ConversationScreen } from './src/screens/ConversationScreen';
@@ -127,9 +128,8 @@ export default function App() {
   if (loading) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#9C6440" />
-        </View>
+        <StatusBar style="dark" />
+        <PublishProcessingState formState={formState} />
       </SafeAreaView>
     );
   }
@@ -236,5 +236,4 @@ export default function App() {
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#FFF9F5' },
   appFrame: { flex: 1, backgroundColor: '#FFF9F5' },
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FFF9F5' },
 });
