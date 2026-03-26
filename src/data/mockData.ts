@@ -73,10 +73,10 @@ export const homeData: HomeData = {
         },
     ],
     bottomTabs: [
-        { id: 'home', label: '首页', glyph: '⌂', active: true },
-        { id: 'custom', label: '定制', glyph: '✦' },
-        { id: 'chat', label: '沟通', glyph: '◌' },
-        { id: 'mine', label: '我的', glyph: '◯' },
+        { id: 'home', label: '首页', active: true },
+        { id: 'custom', label: '定制' },
+        { id: 'chat', label: '沟通' },
+        { id: 'mine', label: '我的' },
     ],
 }
 

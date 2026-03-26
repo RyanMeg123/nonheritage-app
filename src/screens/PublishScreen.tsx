@@ -1,5 +1,5 @@
 import { startTransition, useState } from 'react';
-import { Alert, StyleSheet, View } from 'react-native';
+import { Alert, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 
 import { PageHeaderCard, ScreenShell } from '../components/common';
@@ -243,7 +243,6 @@ export function PublishScreen({
 
   return (
     <ScreenShell
-      scrollContentStyle={styles.scrollContent}
       footer={
         <PublishFooterBar
           modeLabel={currentMode.modeLabel}
@@ -304,9 +303,3 @@ export function PublishScreen({
     </ScreenShell>
   );
 }
-
-const styles = StyleSheet.create({
-  scrollContent: {
-    paddingBottom: 248,
-  },
-});

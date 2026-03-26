@@ -5,6 +5,7 @@ import {
     Animated,
     Easing,
     Image,
+    type ImageSourcePropType,
     LayoutChangeEvent,
     Pressable,
     ScrollView,
@@ -21,6 +22,13 @@ import type { MainTabId } from '../types'
 
 const publishHeaderFigure = require('../../assets/illustrations/dz-hero.png')
 const publishHeaderFlowers = require('../../assets/illustrations/huaban.jpeg')
+const conversationHeaderFigure = require('../../assets/illustrations/email.png')
+const mainTabIcons = {
+    home: require('../../assets/bar/home.png'),
+    custom: require('../../assets/bar/icon-flower.jpeg'),
+    chat: require('../../assets/bar/copy.jpeg'),
+    mine: require('../../assets/bar/person.jpeg'),
+} as const
 
 export function ScreenShell({
     children,
@@ -276,14 +284,16 @@ export function MainTabBar({
     tabs,
     activeTab,
     onTabPress,
+    compact = false,
 }: {
-    tabs: Array<{ id: string; label: string; glyph: string }>
+    tabs: Array<{ id: string; label: string }>
     activeTab: MainTabId
     onTabPress: (tabId: MainTabId) => void
+    compact?: boolean
 }) {
     return (
-        <View style={styles.tabWrap}>
-            {tabs.map((tab, index) => {
+        <View style={[styles.tabWrap, compact ? styles.tabWrapCompact : null]}>
+            {tabs.map((tab) => {
                 const typedId = tab.id as MainTabId
                 const active = typedId === activeTab
 
@@ -291,26 +301,36 @@ export function MainTabBar({
                     <Pressable
                         key={tab.id}
                         onPress={() => onTabPress(typedId)}
-                        style={styles.tabItem}
+                        style={[
+                            styles.tabItem,
+                            compact ? styles.tabItemCompact : null,
+                        ]}
                     >
                         <View
                             style={[
                                 styles.tabIcon,
+                                compact ? styles.tabIconCompact : null,
                                 active ? styles.tabIconActive : null,
                             ]}
                         >
-                            <Text
+                            <Image
+                                resizeMode="contain"
+                                source={mainTabIcons[typedId]}
                                 style={[
-                                    styles.tabGlyph,
-                                    active ? styles.tabGlyphActive : null,
+                                    styles.tabIconImage,
+                                    compact
+                                        ? styles.tabIconImageCompact
+                                        : null,
+                                    active
+                                        ? styles.tabIconImageActive
+                                        : null,
                                 ]}
-                            >
-                                {tab.glyph}
-                            </Text>
+                            />
                         </View>
                         <Text
                             style={[
                                 styles.tabLabel,
+                                compact ? styles.tabLabelCompact : null,
                                 active ? styles.tabLabelActive : null,
                             ]}
                         >
@@ -333,6 +353,7 @@ export function PageHeaderCard({
     style,
     animatedHero = false,
     showPublishIllustration = false,
+    showConversationIllustration = false,
 }: {
     title: string
     subtitle: string
@@ -343,11 +364,16 @@ export function PageHeaderCard({
     style?: StyleProp<ViewStyle>
     animatedHero?: boolean
     showPublishIllustration?: boolean
+    showConversationIllustration?: boolean
 }) {
     const titlePlatePulse = useRef(new Animated.Value(0)).current
     const glowFloat = useRef(new Animated.Value(0)).current
     const badgeEnter = useRef(new Animated.Value(animatedHero ? 0 : 1)).current
     const flowerMotion = useRef(new Animated.Value(0)).current
+    const publishGlowPulse = useRef(new Animated.Value(0)).current
+    const conversationFigureFloat = useRef(new Animated.Value(0)).current
+    const hasIllustration =
+        showPublishIllustration || showConversationIllustration
 
     useEffect(() => {
         if (!animatedHero) {
@@ -412,6 +438,7 @@ export function PageHeaderCard({
     useEffect(() => {
         if (!showPublishIllustration) {
             flowerMotion.setValue(0)
+            publishGlowPulse.setValue(0)
             return
         }
 
@@ -419,13 +446,30 @@ export function PageHeaderCard({
             Animated.sequence([
                 Animated.timing(flowerMotion, {
                     toValue: 1,
-                    duration: 3600,
+                    duration: 4300,
                     easing: Easing.inOut(Easing.sin),
                     useNativeDriver: true,
                 }),
                 Animated.timing(flowerMotion, {
                     toValue: 0,
-                    duration: 3600,
+                    duration: 3900,
+                    easing: Easing.inOut(Easing.sin),
+                    useNativeDriver: true,
+                }),
+            ]),
+        )
+
+        const glowPulseLoop = Animated.loop(
+            Animated.sequence([
+                Animated.timing(publishGlowPulse, {
+                    toValue: 1,
+                    duration: 3000,
+                    easing: Easing.inOut(Easing.sin),
+                    useNativeDriver: true,
+                }),
+                Animated.timing(publishGlowPulse, {
+                    toValue: 0,
+                    duration: 3400,
                     easing: Easing.inOut(Easing.sin),
                     useNativeDriver: true,
                 }),
@@ -433,9 +477,41 @@ export function PageHeaderCard({
         )
 
         flowerLoop.start()
+        glowPulseLoop.start()
 
-        return () => flowerLoop.stop()
-    }, [flowerMotion, showPublishIllustration])
+        return () => {
+            flowerLoop.stop()
+            glowPulseLoop.stop()
+        }
+    }, [flowerMotion, publishGlowPulse, showPublishIllustration])
+
+    useEffect(() => {
+        if (!showConversationIllustration) {
+            conversationFigureFloat.setValue(0)
+            return
+        }
+
+        const conversationLoop = Animated.loop(
+            Animated.sequence([
+                Animated.timing(conversationFigureFloat, {
+                    toValue: 1,
+                    duration: 3200,
+                    easing: Easing.inOut(Easing.sin),
+                    useNativeDriver: true,
+                }),
+                Animated.timing(conversationFigureFloat, {
+                    toValue: 0,
+                    duration: 3200,
+                    easing: Easing.inOut(Easing.sin),
+                    useNativeDriver: true,
+                }),
+            ]),
+        )
+
+        conversationLoop.start()
+
+        return () => conversationLoop.stop()
+    }, [conversationFigureFloat, showConversationIllustration])
 
     const titlePlateStyle: any = animatedHero
         ? {
@@ -454,7 +530,28 @@ export function PageHeaderCard({
           }
         : null
 
-    const glowMotionStyle: any = animatedHero
+    const glowMotionStyle: any = showConversationIllustration
+        ? {
+              opacity: glowFloat.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0.52, 0.74],
+              }),
+              transform: [
+                  {
+                      translateY: glowFloat.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [0, -8],
+                      }),
+                  },
+                  {
+                      scale: glowFloat.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [1, 1.05],
+                      }),
+                  },
+              ],
+          }
+        : animatedHero
         ? {
               transform: [
                   {
@@ -471,6 +568,27 @@ export function PageHeaderCard({
                   },
               ],
           }
+        : showPublishIllustration
+          ? {
+                opacity: publishGlowPulse.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0.88, 1],
+                }),
+                transform: [
+                    {
+                        translateY: publishGlowPulse.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [0, -5],
+                        }),
+                    },
+                    {
+                        scale: publishGlowPulse.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [1, 1.06],
+                        }),
+                    },
+                ],
+            }
         : null
 
     const badgeMotionStyle: any = animatedHero
@@ -497,57 +615,122 @@ export function PageHeaderCard({
         ? {
               opacity: flowerMotion.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [0.58, 0.76],
+                  outputRange: [0.6, 0.76],
               }),
               transform: [
                   {
                       translateY: flowerMotion.interpolate({
                           inputRange: [0, 1],
-                          outputRange: [0, -4],
+                          outputRange: [1, -5],
                       }),
                   },
                   {
                       translateX: flowerMotion.interpolate({
                           inputRange: [0, 1],
-                          outputRange: [0, 1],
+                          outputRange: [-1, 2],
                       }),
                   },
                   {
                       scale: flowerMotion.interpolate({
                           inputRange: [0, 1],
-                          outputRange: [0.985, 1.02],
+                          outputRange: [0.992, 1.022],
+                      }),
+                  },
+                  {
+                      rotate: flowerMotion.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: ['-1deg', '2.4deg'],
                       }),
                   },
               ],
           }
         : null
 
+    const conversationFigureMotionStyle: any = showConversationIllustration
+        ? {
+              transform: [
+                  {
+                      translateY: conversationFigureFloat.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [1, -4],
+                      }),
+                  },
+                  {
+                      rotate: conversationFigureFloat.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: ['-5deg', '-2deg'],
+                      }),
+                  },
+              ],
+          }
+        : null
+
+    const headerIllustrationSource: ImageSourcePropType | null =
+        showPublishIllustration
+            ? publishHeaderFigure
+            : showConversationIllustration
+              ? conversationHeaderFigure
+              : null
+
     return (
         <View style={[styles.pageHeaderCard, style]}>
             <View style={styles.pageHeaderSky} />
-            <Animated.View style={[styles.pageHeaderGlow, glowMotionStyle]} />
+            <Animated.View
+                style={[
+                    styles.pageHeaderGlow,
+                    showConversationIllustration
+                        ? styles.pageHeaderGlowConversation
+                        : null,
+                    glowMotionStyle,
+                ]}
+            />
             <View style={styles.pageHeaderCloud} />
-            {showPublishIllustration ? (
+            {headerIllustrationSource ? (
                 <View
-                    pointerEvents="none"
-                    style={styles.pageHeaderIllustrationScene}
+                        pointerEvents="none"
+                        style={[
+                            styles.pageHeaderIllustrationScene,
+                            showConversationIllustration
+                                ? styles.pageHeaderIllustrationSceneConversation
+                            : null,
+                    ]}
                 >
+                    {showPublishIllustration ? (
+                        <Animated.View
+                            style={[
+                                styles.pageHeaderFlowerWrap,
+                                flowerMotionStyle,
+                            ]}
+                        >
+                            <Image
+                                resizeMode="contain"
+                                source={publishHeaderFlowers}
+                                style={styles.pageHeaderFlowerImage}
+                            />
+                        </Animated.View>
+                    ) : null}
                     <Animated.View
-                        style={[styles.pageHeaderFlowerWrap, flowerMotionStyle]}
+                        style={[
+                            styles.pageHeaderFigureWrap,
+                            showConversationIllustration
+                                ? [
+                                      styles.pageHeaderFigureWrapConversation,
+                                      conversationFigureMotionStyle,
+                                  ]
+                                : null,
+                        ]}
                     >
                         <Image
                             resizeMode="contain"
-                            source={publishHeaderFlowers}
-                            style={styles.pageHeaderFlowerImage}
+                            source={headerIllustrationSource}
+                            style={[
+                                styles.pageHeaderFigureImage,
+                                showConversationIllustration
+                                    ? styles.pageHeaderFigureImageConversation
+                                    : null,
+                            ]}
                         />
                     </Animated.View>
-                    <View style={styles.pageHeaderFigureWrap}>
-                        <Image
-                            resizeMode="contain"
-                            source={publishHeaderFigure}
-                            style={styles.pageHeaderFigureImage}
-                        />
-                    </View>
                 </View>
             ) : null}
             <View style={styles.pageHeaderTop}>
@@ -575,7 +758,13 @@ export function PageHeaderCard({
                 {animatedHero ? (
                     <Animated.View
                         pointerEvents="none"
-                        style={[styles.pageHeaderTitlePlate, titlePlateStyle]}
+                        style={[
+                            styles.pageHeaderTitlePlate,
+                            showConversationIllustration
+                                ? styles.pageHeaderTitlePlateConversation
+                                : null,
+                            titlePlateStyle,
+                        ]}
                     />
                 ) : null}
                 <Text style={styles.pageHeaderEyebrow}>{eyebrow}</Text>
@@ -584,7 +773,9 @@ export function PageHeaderCard({
                         styles.pageHeaderTitle,
                         showPublishIllustration
                             ? styles.pageHeaderTitleWithArt
-                            : null,
+                            : showConversationIllustration
+                              ? styles.pageHeaderTitleWithConversationArt
+                              : null,
                     ]}
                 >
                     {title}
@@ -594,7 +785,9 @@ export function PageHeaderCard({
                         styles.pageHeaderSubtitle,
                         showPublishIllustration
                             ? styles.pageHeaderSubtitleWithArt
-                            : null,
+                            : showConversationIllustration
+                              ? styles.pageHeaderSubtitleWithConversationArt
+                              : null,
                     ]}
                 >
                     {subtitle}
@@ -800,11 +993,18 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         gap: 6,
     },
+    tabWrapCompact: {
+        gap: 4,
+    },
     tabItem: {
         flex: 1,
         alignItems: 'center',
         gap: 6,
         paddingVertical: 6,
+    },
+    tabItemCompact: {
+        gap: 4,
+        paddingVertical: 2,
     },
     tabIcon: {
         width: 44,
@@ -814,21 +1014,35 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         backgroundColor: '#FFF4EC',
     },
+    tabIconCompact: {
+        width: 38,
+        height: 38,
+        borderRadius: 14,
+        backgroundColor: '#FFF7F1',
+    },
     tabIconActive: {
         backgroundColor: colors.accentBurgundy,
     },
-    tabGlyph: {
-        color: colors.textSecondary,
-        fontSize: 16,
+    tabIconImage: {
+        width: 21,
+        height: 21,
+        tintColor: colors.textSecondary,
     },
-    tabGlyphActive: {
-        color: colors.textInverse,
+    tabIconImageCompact: {
+        width: 18,
+        height: 18,
+    },
+    tabIconImageActive: {
+        tintColor: colors.textInverse,
     },
     tabLabel: {
         color: colors.textSecondary,
         fontFamily: typography.body,
         fontSize: 11,
         fontWeight: '600',
+    },
+    tabLabelCompact: {
+        fontSize: 10,
     },
     tabLabelActive: {
         color: colors.textPrimary,
@@ -864,6 +1078,14 @@ const styles = StyleSheet.create({
         borderRadius: 66,
         backgroundColor: 'rgba(255,232,184,0.5)',
     },
+    pageHeaderGlowConversation: {
+        right: 20,
+        top: 34,
+        width: 116,
+        height: 116,
+        borderRadius: 58,
+        backgroundColor: 'rgba(255,232,184,0.34)',
+    },
     pageHeaderCloud: {
         position: 'absolute',
         left: -16,
@@ -879,6 +1101,13 @@ const styles = StyleSheet.create({
         bottom: -10,
         width: 190,
         height: 196,
+    },
+    pageHeaderIllustrationSceneConversation: {
+        right: 10,
+        top: 18,
+        width: 196,
+        height: 148,
+        zIndex: 1,
     },
     pageHeaderFlowerWrap: {
         position: 'absolute',
@@ -898,9 +1127,19 @@ const styles = StyleSheet.create({
         width: 150,
         height: 186,
     },
+    pageHeaderFigureWrapConversation: {
+        ...StyleSheet.absoluteFillObject,
+    },
     pageHeaderFigureImage: {
         width: '100%',
         height: '100%',
+    },
+    pageHeaderFigureImageConversation: {
+        opacity: 1,
+        shadowColor: 'rgba(142,101,76,0.18)',
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 1,
+        shadowRadius: 18,
     },
     pageHeaderTop: {
         flexDirection: 'row',
@@ -908,6 +1147,7 @@ const styles = StyleSheet.create({
         alignItems: 'flex-start',
         minHeight: 44,
         marginBottom: 6,
+        zIndex: 3,
     },
     pageHeaderBadge: {
         flexDirection: 'row',
@@ -941,6 +1181,7 @@ const styles = StyleSheet.create({
     },
     pageHeaderCopy: {
         position: 'relative',
+        zIndex: 2,
     },
     pageHeaderTitlePlate: {
         position: 'absolute',
@@ -951,6 +1192,9 @@ const styles = StyleSheet.create({
         borderRadius: 24,
         backgroundColor: 'rgba(255,255,255,0.92)',
     },
+    pageHeaderTitlePlateConversation: {
+        width: '56%',
+    },
     pageHeaderTitle: {
         fontSize: 30,
         lineHeight: 36,
@@ -959,6 +1203,9 @@ const styles = StyleSheet.create({
     pageHeaderTitleWithArt: {
         maxWidth: '58%',
     },
+    pageHeaderTitleWithConversationArt: {
+        maxWidth: '50%',
+    },
     pageHeaderSubtitle: {
         fontSize: 15,
         lineHeight: 22,
@@ -966,5 +1213,8 @@ const styles = StyleSheet.create({
     },
     pageHeaderSubtitleWithArt: {
         maxWidth: '54%',
+    },
+    pageHeaderSubtitleWithConversationArt: {
+        maxWidth: '46%',
     },
 })

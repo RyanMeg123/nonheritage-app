@@ -14,29 +14,6 @@ function getStatusIconName(label: string): ComponentProps<typeof Feather>['name'
   return 'circle';
 }
 
-function ConversationHeroDecoration() {
-  return (
-    <Svg width={92} height={92} viewBox="0 0 92 92">
-      <Path
-        d="M12 68C28 54 39 32 66 26C75 24 81 24 86 26"
-        stroke="rgba(201,120,120,0.18)"
-        strokeWidth={2}
-        strokeLinecap="round"
-        fill="none"
-      />
-      <Path
-        d="M20 80C34 70 47 58 76 54"
-        stroke="rgba(217,152,131,0.16)"
-        strokeWidth={1.5}
-        strokeLinecap="round"
-        fill="none"
-      />
-      <Circle cx={66} cy={26} r={3} fill="rgba(231,200,122,0.5)" />
-      <Circle cx={76} cy={54} r={2.5} fill="rgba(201,120,120,0.28)" />
-    </Svg>
-  );
-}
-
 function CardCornerAccent({ tone = 'warm' }: { tone?: 'warm' | 'soft' }) {
   const stroke = tone === 'warm' ? 'rgba(201,120,120,0.22)' : 'rgba(217,152,131,0.18)';
   const fill = tone === 'warm' ? 'rgba(248,217,213,0.32)' : 'rgba(255,255,255,0.4)';
@@ -104,20 +81,16 @@ export function ConversationScreen({
         </View>
       }
     >
-      <View style={styles.heroWrap}>
-        <PageHeaderCard
-          eyebrow="版本沟通"
-          title={data.headerTitle}
-          subtitle={data.headerSubtitle}
-          badge={data.badgeLabel}
-          badgeIcon={<Feather name="message-circle" size={14} color={colors.accentBurgundy} />}
-          onBack={onBack}
-          animatedHero
-        />
-        <View pointerEvents="none" style={styles.heroDecoration}>
-          <ConversationHeroDecoration />
-        </View>
-      </View>
+      <PageHeaderCard
+        eyebrow="版本沟通"
+        title={data.headerTitle}
+        subtitle={data.headerSubtitle}
+        badge={data.badgeLabel}
+        badgeIcon={<Feather name="message-circle" size={14} color={colors.accentBurgundy} />}
+        onBack={onBack}
+        animatedHero
+        showConversationIllustration
+      />
 
       <SectionCard tone="paper" style={styles.quoteCard}>
         <View pointerEvents="none" style={styles.quoteDecoration}>
@@ -191,14 +164,6 @@ function StatusItem({ item, lead }: { item: InfoPair; lead: boolean }) {
 }
 
 const styles = StyleSheet.create({
-  heroWrap: {
-    position: 'relative',
-  },
-  heroDecoration: {
-    position: 'absolute',
-    top: 18,
-    right: 18,
-  },
   quoteCard: {
     backgroundColor: colors.mutedPaper,
     overflow: 'hidden',

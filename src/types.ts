@@ -52,7 +52,6 @@ export type HomeData = {
   bottomTabs: Array<{
     id: string;
     label: string;
-    glyph: string;
     active?: boolean;
   }>;
 };
