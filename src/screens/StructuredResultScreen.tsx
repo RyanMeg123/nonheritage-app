@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { BackChip, BodyText, DisplayText, PillButton, ScreenShell, SectionCard } from '../components/common';
+import { BodyText, PageHeaderCard, PillButton, ScreenShell, SectionCard } from '../components/common';
 import { colors, radii, typography } from '../theme/tokens';
 import type { StructuredResultData } from '../types';
 
@@ -22,19 +22,13 @@ export function StructuredResultScreen({
         </View>
       }
     >
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <BackChip onPress={onBack} />
-          <View style={styles.headerCopy}>
-            <BodyText style={styles.headerEyebrow}>structured brief</BodyText>
-            <DisplayText style={styles.headerTitle}>{data.headerTitle}</DisplayText>
-            <BodyText>{data.headerSubtitle}</BodyText>
-          </View>
-        </View>
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>{data.badgeLabel}</Text>
-        </View>
-      </View>
+      <PageHeaderCard
+        eyebrow="需求整理"
+        title={data.headerTitle}
+        subtitle={data.headerSubtitle}
+        badge={data.badgeLabel}
+        onBack={onBack}
+      />
 
       <SectionCard tone="paper" style={styles.summaryCard}>
         <Text style={styles.summaryText}>{data.summary}</Text>
@@ -53,13 +47,13 @@ export function StructuredResultScreen({
         </View>
       </SectionCard>
 
-      <SectionCard tone="deep" bordered={false} style={styles.focusCard}>
+      <SectionCard bordered={false} style={styles.focusCard}>
         <Text style={styles.focusTitle}>{data.focusTitle}</Text>
         <View style={styles.focusList}>
           {data.focusItems.map((item) => (
             <View key={item} style={styles.focusItem}>
               <Text style={styles.focusDot}>•</Text>
-              <BodyText inverse style={styles.focusCopy}>
+              <BodyText style={styles.focusCopy}>
                 {item}
               </BodyText>
             </View>
@@ -76,51 +70,14 @@ export function StructuredResultScreen({
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    gap: 12,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
-    flex: 1,
-  },
-  headerCopy: {
-    flex: 1,
-    gap: 2,
-    paddingTop: 2,
-  },
-  headerEyebrow: {
-    color: colors.accentBurgundy,
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  headerTitle: {
-    fontSize: 30,
-  },
-  badge: {
-    borderRadius: radii.pill,
-    backgroundColor: colors.sky,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  badgeText: {
-    color: colors.textPrimary,
-    fontFamily: typography.body,
-    fontSize: 12,
-    fontWeight: '700',
-  },
   summaryCard: {
     backgroundColor: '#FFFDF9',
   },
   summaryText: {
     color: colors.textPrimary,
     fontFamily: typography.display,
-    fontSize: 24,
-    lineHeight: 31,
+    fontSize: 22,
+    lineHeight: 29,
     fontWeight: '600',
   },
   infoCard: {
@@ -154,10 +111,10 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   focusCard: {
-    backgroundColor: colors.accentBurgundy,
+    backgroundColor: '#F7EEE7',
   },
   focusTitle: {
-    color: colors.textInverse,
+    color: colors.textPrimary,
     fontFamily: typography.body,
     fontSize: 16,
     fontWeight: '700',
@@ -170,7 +127,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   focusDot: {
-    color: colors.textInverse,
+    color: colors.accentBurgundy,
     fontSize: 18,
     lineHeight: 20,
   },

@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { BackChip, BodyText, DisplayText, PillButton, ScreenShell, SectionCard } from '../components/common';
+import { BodyText, PageHeaderCard, PillButton, ScreenShell, SectionCard } from '../components/common';
 import { colors, radii, typography } from '../theme/tokens';
 import type { ConversationScreenData } from '../types';
 
@@ -22,19 +22,13 @@ export function ConversationScreen({
         </View>
       }
     >
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <BackChip onPress={onBack} />
-          <View style={styles.headerCopy}>
-            <BodyText style={styles.headerEyebrow}>version conversation</BodyText>
-            <DisplayText style={styles.headerTitle}>{data.headerTitle}</DisplayText>
-            <BodyText>{data.headerSubtitle}</BodyText>
-          </View>
-        </View>
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>{data.badgeLabel}</Text>
-        </View>
-      </View>
+      <PageHeaderCard
+        eyebrow="版本沟通"
+        title={data.headerTitle}
+        subtitle={data.headerSubtitle}
+        badge={data.badgeLabel}
+        onBack={onBack}
+      />
 
       <SectionCard tone="paper" style={styles.quoteCard}>
         <Text style={styles.quoteLabel}>{data.quoteLabel}</Text>
@@ -53,10 +47,10 @@ export function ConversationScreen({
         </View>
       </SectionCard>
 
-      <SectionCard tone="deep" bordered={false}>
+      <SectionCard bordered={false} style={styles.introCard}>
         <Text style={styles.introTitle}>{data.introTitle}</Text>
         <Text style={styles.introText}>{data.introText}</Text>
-        <BodyText inverse>{data.introNote}</BodyText>
+        <BodyText>{data.introNote}</BodyText>
       </SectionCard>
 
       <View style={styles.messageList}>
@@ -86,43 +80,6 @@ export function ConversationScreen({
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    gap: 12,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    gap: 12,
-    alignItems: 'flex-start',
-    flex: 1,
-  },
-  headerCopy: {
-    flex: 1,
-    gap: 2,
-    paddingTop: 2,
-  },
-  headerEyebrow: {
-    color: colors.accentBurgundy,
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  headerTitle: {
-    fontSize: 30,
-  },
-  badge: {
-    borderRadius: radii.pill,
-    backgroundColor: colors.sky,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  badgeText: {
-    color: colors.textPrimary,
-    fontFamily: typography.body,
-    fontSize: 12,
-    fontWeight: '700',
-  },
   quoteCard: {
     backgroundColor: colors.mutedPaper,
   },
@@ -165,14 +122,17 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '700',
   },
+  introCard: {
+    backgroundColor: '#F7EEE7',
+  },
   introTitle: {
-    color: '#FFF8F1',
+    color: colors.accentBurgundy,
     fontFamily: typography.body,
-    fontSize: 15,
-    fontWeight: '700',
+    fontSize: 13,
+    fontWeight: '600',
   },
   introText: {
-    color: '#FFF8F1',
+    color: colors.textPrimary,
     fontFamily: typography.display,
     fontSize: 24,
     lineHeight: 31,
@@ -198,11 +158,9 @@ const styles = StyleSheet.create({
     lineHeight: 21,
   },
   actionRow: {
-    flexDirection: 'row',
     gap: 10,
   },
   actionCard: {
-    flex: 1,
     backgroundColor: '#FFF7F1',
   },
   actionWarm: {

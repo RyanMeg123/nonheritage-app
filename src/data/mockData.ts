@@ -83,12 +83,12 @@ export const homeData: HomeData = {
 export const publishPreset: PublishPreset = {
     progressLabel: '1 / 3',
     headerTitle: '发布需求',
-    headerSubtitle: '先上传，再补充文字和条件',
-    uploadGuideLabel: '可点击',
+    headerSubtitle: '先选一种发布方式，再补充对应信息',
+    uploadGuideLabel: '参考图',
     uploadGuideTitle: '上传灵感图',
-    uploadGuideDescription: '先上传你最想实现的方向',
+    uploadGuideDescription: '适合已经有参考图，想直接进入判断的人',
     requirementHintTitle: '文字需求',
-    requirementHintSubtitle: '你想做成什么样？最在意哪个细节？',
+    requirementHintSubtitle: '用一两句话说清楚你想做什么、最在意什么',
     requirementPlaceholder:
         '例如：我想做一件偏东方轮廓的短外套，保留花影层次，但不要太艳。预算在 8 千以内，希望 5 月中旬前拿到。',
     craftOptions: [
@@ -107,8 +107,7 @@ export const publishPreset: PublishPreset = {
         { id: 'timeline-june', label: '交付时间', value: '6 月上旬前' },
     ],
     initialUploadedImages: [],
-    initialRequirementText:
-        '我想做一件偏东方轮廓的短外套，保留花影层次，但不要太艳。预算在 8 千以内，希望 5 月中旬前拿到。',
+    initialRequirementText: '',
     defaultCraftId: 'tie-dye',
     defaultBudgetId: 'budget-8000',
     defaultTimelineId: 'timeline-may',

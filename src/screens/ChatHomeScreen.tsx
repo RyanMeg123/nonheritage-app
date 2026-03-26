@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { BodyText, DisplayText, MainTabBar, ScreenShell, SectionCard } from '../components/common';
+import { BodyText, MainTabBar, PageHeaderCard, ScreenShell, SectionCard } from '../components/common';
 import { colors, radii, typography } from '../theme/tokens';
 import type { ConversationScreenData, HomeData, MainTabId } from '../types';
 
@@ -17,26 +17,17 @@ export function ChatHomeScreen({
 }) {
   return (
     <ScreenShell footer={<MainTabBar tabs={tabs} activeTab="chat" onTabPress={onTabPress} />}>
-      <View style={styles.header}>
-        <View style={styles.headerCopy}>
-          <BodyText style={styles.headerEyebrow}>conversation</BodyText>
-          <DisplayText style={styles.headerTitle}>{data.headerTitle}</DisplayText>
-          <BodyText>{data.headerSubtitle}</BodyText>
-        </View>
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>{data.badgeLabel}</Text>
-        </View>
-      </View>
+      <PageHeaderCard eyebrow="沟通空间" title={data.headerTitle} subtitle={data.headerSubtitle} badge={data.badgeLabel} />
 
       <SectionCard tone="paper" style={styles.quoteCard}>
         <Text style={styles.quoteLabel}>{data.quoteLabel}</Text>
         <Text style={styles.quoteText}>{data.quoteText}</Text>
       </SectionCard>
 
-      <SectionCard tone="deep" bordered={false}>
+      <SectionCard bordered={false} style={styles.introCard}>
         <Text style={styles.introTitle}>{data.introTitle}</Text>
         <Text style={styles.introText}>{data.introText}</Text>
-        <BodyText inverse>{data.introNote}</BodyText>
+        <BodyText>{data.introNote}</BodyText>
       </SectionCard>
 
       <View style={styles.messageList}>
@@ -60,36 +51,6 @@ export function ChatHomeScreen({
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    gap: 12,
-  },
-  headerCopy: {
-    flex: 1,
-    gap: 2,
-  },
-  headerEyebrow: {
-    color: colors.accentBurgundy,
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  headerTitle: {
-    fontSize: 30,
-  },
-  badge: {
-    borderRadius: radii.pill,
-    backgroundColor: colors.sky,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  badgeText: {
-    color: colors.textPrimary,
-    fontFamily: typography.body,
-    fontSize: 12,
-    fontWeight: '700',
-  },
   quoteCard: {
     backgroundColor: colors.mutedPaper,
   },
@@ -105,14 +66,17 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 22,
   },
+  introCard: {
+    backgroundColor: '#F7EEE7',
+  },
   introTitle: {
-    color: colors.textInverse,
+    color: colors.accentBurgundy,
     fontFamily: typography.body,
-    fontSize: 15,
-    fontWeight: '700',
+    fontSize: 13,
+    fontWeight: '600',
   },
   introText: {
-    color: colors.textInverse,
+    color: colors.textPrimary,
     fontFamily: typography.display,
     fontSize: 24,
     lineHeight: 31,

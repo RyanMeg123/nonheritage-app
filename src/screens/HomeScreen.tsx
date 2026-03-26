@@ -362,7 +362,7 @@ export function HomeScreen({
                 </View>
             </SectionCard>
 
-      <HomeHeroDetails summaryTitle={homeData.heroSummaryTitle} />
+            {/* <HomeHeroDetails summaryTitle={homeData.heroSummaryTitle} /> */}
         </ScreenShell>
     )
 }
@@ -379,9 +379,11 @@ const styles = StyleSheet.create({
     },
     brandTitle: {
         fontSize: 34,
+        lineHeight: 41,
     },
     brandSubtitle: {
-        fontSize: 14,
+        fontSize: 15,
+        lineHeight: 22,
     },
     sectionHeader: {
         gap: 4,
@@ -392,40 +394,40 @@ const styles = StyleSheet.create({
     pressed: {
         opacity: 0.92,
     },
-  tabRow: {
-    flexDirection: 'row',
-    alignSelf: 'flex-start',
-    backgroundColor: colors.surfaceCream,
-    borderRadius: radii.pill,
-    padding: 6,
-    borderWidth: 1,
-    borderColor: colors.lineSoft,
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.5,
-    shadowRadius: 16,
-    elevation: 4,
-  },
-  tabChip: {
-    flex: 1,
-    borderRadius: radii.pill,
-    paddingVertical: 11,
-    paddingHorizontal: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: 148,
-  },
-  tabChipIdle: {
-    backgroundColor: 'transparent',
-  },
-  tabChipActive: {
-    backgroundColor: colors.accentBurgundy,
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35,
-    shadowRadius: 12,
-    elevation: 3,
-  },
+    tabRow: {
+        flexDirection: 'row',
+        alignSelf: 'flex-start',
+        backgroundColor: colors.surfaceCream,
+        borderRadius: radii.pill,
+        padding: 6,
+        borderWidth: 1,
+        borderColor: colors.lineSoft,
+        shadowColor: colors.shadow,
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.5,
+        shadowRadius: 16,
+        elevation: 4,
+    },
+    tabChip: {
+        flex: 1,
+        borderRadius: radii.pill,
+        paddingVertical: 11,
+        paddingHorizontal: 22,
+        alignItems: 'center',
+        justifyContent: 'center',
+        minWidth: 148,
+    },
+    tabChipIdle: {
+        backgroundColor: 'transparent',
+    },
+    tabChipActive: {
+        backgroundColor: colors.accentBurgundy,
+        shadowColor: colors.shadow,
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.35,
+        shadowRadius: 12,
+        elevation: 3,
+    },
     tabChipText: {
         color: colors.textSecondary,
         fontFamily: typography.body,
@@ -464,17 +466,17 @@ const styles = StyleSheet.create({
     carouselTitle: {
         color: colors.textPrimary,
         fontFamily: typography.display,
-        fontSize: 28,
+        fontSize: 26,
         fontWeight: '600',
-        lineHeight: 36,
+        lineHeight: 34,
         marginTop: 14,
     },
     carouselTitleCraft: {
         marginTop: 18,
     },
     carouselSummary: {
-        fontSize: 14,
-        lineHeight: 22,
+        fontSize: 15,
+        lineHeight: 23,
         maxWidth: '88%',
     },
     carouselImageWrap: {

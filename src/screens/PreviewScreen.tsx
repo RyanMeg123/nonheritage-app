@@ -1,6 +1,6 @@
 import { Image, StyleSheet, Text, View } from 'react-native';
 
-import { BackChip, BodyText, DisplayText, PillButton, ScreenShell, SectionCard } from '../components/common';
+import { BodyText, PageHeaderCard, PillButton, ScreenShell, SectionCard } from '../components/common';
 import { colors, radii, typography } from '../theme/tokens';
 import type { PreviewScreenData } from '../types';
 
@@ -24,19 +24,13 @@ export function PreviewScreen({
         </View>
       }
     >
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <BackChip onPress={onBack} />
-          <View style={styles.headerCopy}>
-            <BodyText style={styles.headerEyebrow}>gentle preview</BodyText>
-            <DisplayText style={styles.headerTitle}>{data.headerTitle}</DisplayText>
-            <BodyText>{data.headerSubtitle}</BodyText>
-          </View>
-        </View>
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>{data.badgeLabel}</Text>
-        </View>
-      </View>
+      <PageHeaderCard
+        eyebrow="预览确认"
+        title={data.headerTitle}
+        subtitle={data.headerSubtitle}
+        badge={data.badgeLabel}
+        onBack={onBack}
+      />
 
       <SectionCard tone="paper" style={styles.heroCard}>
         <Text style={styles.heroTitle}>{data.heroTitle}</Text>
@@ -65,43 +59,6 @@ export function PreviewScreen({
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    gap: 12,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    gap: 12,
-    alignItems: 'flex-start',
-    flex: 1,
-  },
-  headerCopy: {
-    flex: 1,
-    gap: 2,
-    paddingTop: 2,
-  },
-  headerEyebrow: {
-    color: colors.accentBurgundy,
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  headerTitle: {
-    fontSize: 30,
-  },
-  badge: {
-    borderRadius: radii.pill,
-    backgroundColor: colors.sky,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  badgeText: {
-    color: colors.textPrimary,
-    fontFamily: typography.body,
-    fontSize: 12,
-    fontWeight: '700',
-  },
   heroCard: {
     backgroundColor: '#FFFDF9',
   },
@@ -138,11 +95,9 @@ const styles = StyleSheet.create({
     lineHeight: 21,
   },
   actionRow: {
-    flexDirection: 'row',
     gap: 10,
   },
   actionCard: {
-    flex: 1,
     backgroundColor: '#FFF7F1',
   },
   actionWarm: {

@@ -5,7 +5,6 @@ import {
     Animated,
     Easing,
     Image,
-    Platform,
     StyleSheet,
     Text,
     View,
@@ -17,11 +16,6 @@ import type { HomeProcessStep } from '../types'
 const heroIllustration = require('../../assets/home-card.png')
 const processCollage = require('../../assets/lc.png')
 const processCollageAsset = Image.resolveAssetSource(processCollage)
-const heroTitleFont = Platform.select({
-    ios: 'Baskerville',
-    android: 'serif',
-    default: 'serif',
-})
 
 type Props = {
     eyebrow: string
@@ -280,9 +274,9 @@ const styles = StyleSheet.create({
     eyebrow: {
         color: colors.accentBurgundy,
         fontFamily: typography.body,
-        fontSize: 12,
+        fontSize: 13,
         fontWeight: '600',
-        letterSpacing: 0.8,
+        letterSpacing: 0.4,
     },
     badge: {
         borderRadius: radii.pill,
@@ -293,25 +287,26 @@ const styles = StyleSheet.create({
     badgeText: {
         color: colors.textPrimary,
         fontFamily: typography.body,
-        fontSize: 12,
-        fontWeight: '600',
+        fontSize: 13,
+        fontWeight: '500',
     },
     title: {
-        marginTop: 28,
+        marginTop: 24,
         color: colors.textPrimary,
-        fontFamily: heroTitleFont,
-        fontSize: 36,
-        lineHeight: 41,
-        letterSpacing: -1.1,
-        width: 230,
+        fontFamily: typography.display,
+        fontSize: 32,
+        lineHeight: 38,
+        letterSpacing: -0.6,
+        fontWeight: '600',
+        width: 242,
     },
     footnote: {
         marginTop: 10,
         color: colors.textSecondary,
         fontFamily: typography.body,
-        fontSize: 14,
-        lineHeight: 21,
-        width: 210,
+        fontSize: 16,
+        lineHeight: 24,
+        width: 224,
     },
     figureWrap: {
         position: 'absolute',
@@ -346,19 +341,19 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(255,245,239,0.94)',
     },
     floatBadgeSoft: {
-        backgroundColor: 'rgba(200, 180, 212, 0.5)',
+        backgroundColor: 'rgba(245,232,232,0.94)',
     },
     floatBadgeValue: {
         color: colors.textPrimary,
         fontFamily: typography.display,
-        fontSize: 22,
+        fontSize: 20,
         fontWeight: '600',
     },
     floatBadgeLabel: {
         color: colors.textSecondary,
         fontFamily: typography.body,
-        fontSize: 11,
-        fontWeight: '600',
+        fontSize: 13,
+        fontWeight: '500',
     },
     figureImage: {
         width: 220,
@@ -379,14 +374,14 @@ const styles = StyleSheet.create({
     summaryTitle: {
         color: colors.textPrimary,
         fontFamily: typography.body,
-        fontSize: 18,
+        fontSize: 17,
         fontWeight: '600',
     },
     summaryText: {
         color: colors.textSecondary,
         fontFamily: typography.body,
-        fontSize: 14,
-        lineHeight: 21,
+        fontSize: 15,
+        lineHeight: 22,
     },
     collageCard: {
         width: '100%',

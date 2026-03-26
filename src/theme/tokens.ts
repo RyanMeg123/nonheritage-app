@@ -2,14 +2,16 @@
 
 import { Platform } from 'react-native'
 
+const iosChineseFont = 'PingFang SC'
+
 const displayFont = Platform.select({
-    ios: 'Avenir Next',
+    ios: iosChineseFont,
     android: 'sans-serif-medium',
     default: 'sans-serif',
 })
 
 export const colors = {
-    accentBurgundy: '#e8a1f7',
+    accentBurgundy: '#C97878',
     accentCopper: '#D99883',
     accentGold: '#E7C87A',
     bgBase: '#FFF9F5',
@@ -32,11 +34,11 @@ export const colors = {
     resultTint: '#FBEFEA',
     processSurface: '#F9FBFF',
     chipIdle: '#FFF7F1',
-    chipActive: '#F3C6C2',
+    chipActive: '#E8A4A4',
     cardOverlay: 'rgba(255,255,255,0.55)',
     sky: '#DFF4FF',
     skyStrong: '#C7EAFA',
-    lilac: '#D9CEE8',
+    lilac: '#F5E8E8',
     blush: '#F8D9D5',
     butter: '#F9ECA7',
     mint: '#DDF2E5',
@@ -53,7 +55,7 @@ export const radii = {
 export const typography = {
     display: displayFont,
     body: Platform.select({
-        ios: 'Avenir Next',
+        ios: iosChineseFont,
         android: 'sans-serif',
         default: 'sans-serif',
     }),

@@ -1,6 +1,6 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { BodyText, DisplayText, MainTabBar, ScreenShell, SectionCard } from '../components/common';
+import { BodyText, MainTabBar, PageHeaderCard, ScreenShell, SectionCard } from '../components/common';
 import { colors, radii, typography } from '../theme/tokens';
 import type { HomeData, MainTabId, ProfileScreenData } from '../types';
 
@@ -9,28 +9,21 @@ export function ProfileScreen({
   tabs,
   onTabPress,
   onOpenProgress,
+  onOpenOnboarding,
 }: {
   data: ProfileScreenData;
   tabs: HomeData['bottomTabs'];
   onTabPress: (tabId: MainTabId) => void;
   onOpenProgress: () => void;
+  onOpenOnboarding: () => void;
 }) {
   return (
     <ScreenShell footer={<MainTabBar tabs={tabs} activeTab="mine" onTabPress={onTabPress} />}>
-      <View style={styles.header}>
-        <View style={styles.headerCopy}>
-          <BodyText style={styles.headerEyebrow}>profile</BodyText>
-          <DisplayText style={styles.headerTitle}>{data.headerTitle}</DisplayText>
-          <BodyText>{data.headerSubtitle}</BodyText>
-        </View>
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>{data.badgeLabel}</Text>
-        </View>
-      </View>
+      <PageHeaderCard eyebrow="账户中心" title={data.headerTitle} subtitle={data.headerSubtitle} badge={data.badgeLabel} />
 
-      <SectionCard tone="deep" bordered={false}>
+      <SectionCard bordered={false} style={styles.leadCard}>
         <Text style={styles.leadTitle}>{data.leadTitle}</Text>
-        <BodyText inverse>{data.leadSummary}</BodyText>
+        <BodyText>{data.leadSummary}</BodyText>
       </SectionCard>
 
       <SectionCard style={styles.versionCard}>
@@ -71,10 +64,18 @@ export function ProfileScreen({
         <Text style={styles.sectionTitle}>{data.accountTitle}</Text>
         <View style={styles.accountList}>
           {data.accountItems.map((item, index) => (
-            <View key={item.id} style={[styles.accountItem, index === 2 ? styles.accountItemWarm : null]}>
+            <Pressable
+              key={item.id}
+              onPress={item.id === 'account-3' ? onOpenOnboarding : undefined}
+              style={({ pressed }) => [
+                styles.accountItem,
+                index === 2 ? styles.accountItemWarm : null,
+                pressed && item.id === 'account-3' ? styles.pressed : null,
+              ]}
+            >
               <Text style={styles.accountTitle}>{item.title}</Text>
               <BodyText>{item.description}</BodyText>
-            </View>
+            </Pressable>
           ))}
         </View>
       </SectionCard>
@@ -83,38 +84,11 @@ export function ProfileScreen({
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    gap: 12,
-  },
-  headerCopy: {
-    flex: 1,
-    gap: 2,
-  },
-  headerEyebrow: {
-    color: colors.accentBurgundy,
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  headerTitle: {
-    fontSize: 30,
-  },
-  badge: {
-    borderRadius: radii.pill,
-    backgroundColor: colors.sky,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  badgeText: {
-    color: colors.textPrimary,
-    fontFamily: typography.body,
-    fontSize: 12,
-    fontWeight: '700',
+  leadCard: {
+    backgroundColor: '#F7EEE7',
   },
   leadTitle: {
-    color: colors.textInverse,
+    color: colors.textPrimary,
     fontFamily: typography.display,
     fontSize: 28,
     lineHeight: 34,
@@ -147,11 +121,9 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   entryRow: {
-    flexDirection: 'row',
     gap: 10,
   },
   entryCard: {
-    flex: 1,
     backgroundColor: '#FFF7F1',
   },
   entryWarm: {
@@ -208,5 +180,8 @@ const styles = StyleSheet.create({
     fontFamily: typography.body,
     fontSize: 15,
     fontWeight: '700',
+  },
+  pressed: {
+    opacity: 0.92,
   },
 });

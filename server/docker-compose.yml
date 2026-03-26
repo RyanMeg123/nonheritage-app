@@ -1,0 +1,49 @@
+# @format
+
+services:
+    postgres:
+        image: postgres:16-alpine
+        container_name: nonheritage-pg
+        restart: unless-stopped
+        environment:
+            POSTGRES_USER: nonheritage
+            POSTGRES_PASSWORD: nonheritage_dev
+            POSTGRES_DB: nonheritage
+        ports:
+            - '5433:5432'
+        volumes:
+            - pg_data:/var/lib/postgresql/data
+        healthcheck:
+            test: ['CMD-SHELL', 'pg_isready -U nonheritage']
+            interval: 5s
+            timeout: 5s
+            retries: 10
+
+    redis:
+        image: redis:7-alpine
+        container_name: nonheritage-redis
+        restart: unless-stopped
+        ports:
+            - '6379:6379'
+        volumes:
+            - redis_data:/data
+
+    server:
+        build: .
+        container_name: nonheritage-server
+        restart: unless-stopped
+        ports:
+            - '4300:4300'
+        env_file:
+            - .env
+        environment:
+            # 容器内连 postgres 用服务名，不用 localhost
+            DATABASE_URL: postgresql://nonheritage:nonheritage_dev@postgres:5432/nonheritage?schema=public
+            REDIS_URL: redis://redis:6379
+        depends_on:
+            postgres:
+                condition: service_healthy
+
+volumes:
+    pg_data:
+    redis_data:

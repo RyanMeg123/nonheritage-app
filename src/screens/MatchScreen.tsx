@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { BackChip, BodyText, DisplayText, PillButton, ScreenShell, SectionCard } from '../components/common';
+import { BodyText, PageHeaderCard, PillButton, ScreenShell, SectionCard } from '../components/common';
 import { colors, radii, typography } from '../theme/tokens';
 import type { MatchScreenData } from '../types';
 
@@ -22,24 +22,18 @@ export function MatchScreen({
         </View>
       }
     >
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <BackChip onPress={onBack} />
-          <View style={styles.headerCopy}>
-            <BodyText style={styles.headerEyebrow}>best match</BodyText>
-            <DisplayText style={styles.headerTitle}>{data.headerTitle}</DisplayText>
-            <BodyText>{data.headerSubtitle}</BodyText>
-          </View>
-        </View>
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>{data.badgeLabel}</Text>
-        </View>
-      </View>
+      <PageHeaderCard
+        eyebrow="匹配推荐"
+        title={data.headerTitle}
+        subtitle={data.headerSubtitle}
+        badge={data.badgeLabel}
+        onBack={onBack}
+      />
 
-      <SectionCard tone="deep" bordered={false} style={styles.leadCard}>
+      <SectionCard bordered={false} style={styles.leadCard}>
         <Text style={styles.leadName}>{data.leadTitle}</Text>
-        <BodyText inverse>{data.leadSummary}</BodyText>
-        <BodyText inverse style={styles.leadReason}>
+        <BodyText>{data.leadSummary}</BodyText>
+        <BodyText style={styles.leadReason}>
           {data.reasonText}
         </BodyText>
       </SectionCard>
@@ -79,54 +73,18 @@ export function MatchScreen({
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    gap: 12,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    gap: 12,
-    alignItems: 'flex-start',
-    flex: 1,
-  },
-  headerCopy: {
-    flex: 1,
-    gap: 2,
-    paddingTop: 2,
-  },
-  headerEyebrow: {
-    color: colors.accentBurgundy,
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  headerTitle: {
-    fontSize: 30,
-  },
-  badge: {
-    borderRadius: radii.pill,
-    backgroundColor: colors.sky,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  badgeText: {
-    color: colors.textPrimary,
-    fontFamily: typography.body,
-    fontSize: 12,
-    fontWeight: '700',
-  },
   leadCard: {
-    backgroundColor: colors.accentBurgundy,
+    backgroundColor: '#F7EEE7',
   },
   leadName: {
-    color: colors.textInverse,
+    color: colors.textPrimary,
     fontFamily: typography.display,
-    fontSize: 30,
+    fontSize: 28,
+    lineHeight: 34,
     fontWeight: '600',
   },
   leadReason: {
-    color: 'rgba(255,253,250,0.78)',
+    color: colors.accentBurgundy,
   },
   logicCard: {
     backgroundColor: '#FFF7F1',

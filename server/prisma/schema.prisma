@@ -1,0 +1,288 @@
+// This is your Prisma schema file.
+// Docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ═══════════════════════════════════════════════════════
+// 账号体系
+// ═══════════════════════════════════════════════════════
+
+// 用户（C 端买家）
+model User {
+  id          String    @id @default(uuid())
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  phone       String?   @unique          // 手机号（可选，支持微信登录）
+  nickname    String?
+  avatarUrl   String?   @map("avatar_url")
+  openid      String?   @unique          // 微信 openid
+
+  submissions     Submission[]
+  orders          Order[]
+  orderMessages   OrderMessage[]
+
+  @@map("users")
+}
+
+// 传承人（B 端工艺师）
+model Artisan {
+  id            String    @id @default(uuid())
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  name          String
+  bio           String?
+  avatarUrl     String?   @map("avatar_url")
+  craftTags     Json      @map("craft_tags")       // String[]，工艺标签
+  portfolio     Json      @default("[]")            // Array<{ imageUrl, caption }>
+  priceRangeMin Int       @map("price_range_min")   // 单位：分
+  priceRangeMax Int       @map("price_range_max")
+  avgDays       Int       @map("avg_days")           // 平均制作周期（天）
+  verified      Boolean   @default(false)            // 是否通过平台认证
+  active        Boolean   @default(true)             // 是否接单
+
+  artisanMatches  ArtisanMatch[]
+  orders          Order[]
+  orderMessages   OrderMessage[]
+
+  @@map("artisans")
+}
+
+// ═══════════════════════════════════════════════════════
+// 需求 → 方案 流程（Phase 1，已有）
+// ═══════════════════════════════════════════════════════
+
+// 用户提交的原始需求
+model Submission {
+  id                   String    @id @default(uuid())
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  userId               String?   @map("user_id")    // 登录后关联，未登录允许为空
+  user                 User?     @relation(fields: [userId], references: [id])
+
+  images               Json                          // Array<{ url: string }>
+  requirementText      String    @map("requirement_text")
+  preferredCraft       String    @map("preferred_craft")
+  budgetRange          String    @map("budget_range")
+  expectedDeliveryDate String    @map("expected_delivery_date")
+  status               String    @default("submitted")
+
+  structuredRequirement StructuredRequirement?
+  plan                  CraftPlan?
+
+  @@map("submissions")
+}
+
+// AI 解析后的结构化需求
+model StructuredRequirement {
+  id                   String    @id @default(uuid())
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  submissionId         String    @unique @map("submission_id")
+  submission           Submission @relation(fields: [submissionId], references: [id])
+
+  category             String
+  style                String
+  craftPreference      String    @map("craft_preference")
+  materialPreference   String    @map("material_preference")
+  colorPreference      String    @map("color_preference")
+  budgetRange          String    @map("budget_range")
+  deliveryDate         String    @map("delivery_date")
+  acceptableVariance   String    @map("acceptable_variance")
+  acceptsModification  Boolean   @default(true) @map("accepts_modification")
+  status               String    @default("ready")
+  aiMode               String    @default("mock") @map("ai_mode")
+  rawResponse          Json?     @map("raw_response")
+
+  @@map("structured_requirements")
+}
+
+// AI 生成的工艺方案
+model CraftPlan {
+  id                        String    @id @default(uuid())
+  createdAt                 DateTime  @default(now()) @map("created_at")
+  updatedAt                 DateTime  @updatedAt @map("updated_at")
+
+  submissionId              String    @unique @map("submission_id")
+  submission                Submission @relation(fields: [submissionId], references: [id])
+
+  structuredRequirementId   String    @map("structured_requirement_id")
+
+  recommendedCraft          String    @map("recommended_craft")
+  recommendationReason      String    @map("recommendation_reason")
+  planSummary               String    @map("plan_summary")
+  riskNotes                 Json      @map("risk_notes")   // String[]
+  timelineRange             String    @map("timeline_range")
+  priceRange                String    @map("price_range")
+  status                    String    @default("generated")
+  aiMode                    String    @default("mock") @map("ai_mode")
+  rawResponse               Json?     @map("raw_response")
+
+  preview                   PreviewResult?
+  artisanMatches            ArtisanMatch[]
+  designConfirmation        DesignConfirmation?
+
+  @@map("craft_plans")
+}
+
+// 预览图生成结果
+model PreviewResult {
+  id           String    @id @default(uuid())
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  submissionId String    @map("submission_id")
+  planId       String    @unique @map("plan_id")
+  plan         CraftPlan @relation(fields: [planId], references: [id])
+
+  sourceImages  Json     @map("source_images")    // Array<{ url }>
+  previewImages Json     @map("preview_images")   // Array<{ id, url, caption }>
+  description   String
+  status        String   @default("pending_generation")
+
+  @@map("preview_results")
+}
+
+// 传承人匹配结果
+model ArtisanMatch {
+  id             String    @id @default(uuid())
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  planId         String    @map("plan_id")
+  plan           CraftPlan @relation(fields: [planId], references: [id])
+
+  artisanId      String?   @map("artisan_id")     // 关联真实传承人档案（mock 时为空）
+  artisan        Artisan?  @relation(fields: [artisanId], references: [id])
+
+  name           String
+  craftExpertise String    @map("craft_expertise")
+  priceRange     String    @map("price_range")
+  timelineRange  String    @map("timeline_range")
+  matchReason    String    @map("match_reason")
+  rank           Int       @default(0)
+
+  @@map("artisan_matches")
+}
+
+// 设计确认单草案
+model DesignConfirmation {
+  id           String    @id @default(uuid())
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  submissionId String    @map("submission_id")
+  planId       String    @unique @map("plan_id")
+  plan         CraftPlan @relation(fields: [planId], references: [id])
+
+  title        String
+  sections     Json                        // Array<{ id, title, value }>
+  status       String    @default("draft")
+
+  order        Order?
+
+  @@map("design_confirmations")
+}
+
+// ═══════════════════════════════════════════════════════
+// 订单履约流程（Phase 2）
+// ═══════════════════════════════════════════════════════
+
+// 订单（用户确认设计单后创建）
+model Order {
+  id                   String    @id @default(uuid())
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  userId               String    @map("user_id")
+  user                 User      @relation(fields: [userId], references: [id])
+
+  artisanId            String    @map("artisan_id")
+  artisan              Artisan   @relation(fields: [artisanId], references: [id])
+
+  submissionId         String    @map("submission_id")
+  designConfirmationId String    @unique @map("design_confirmation_id")
+  designConfirmation   DesignConfirmation @relation(fields: [designConfirmationId], references: [id])
+
+  // 状态机：pending → in_progress → reviewing → completed / cancelled
+  status               String    @default("pending")
+
+  totalPriceFen        Int       @map("total_price_fen")   // 单位：分，避免浮点
+  agreedDeliveryDate   String    @map("agreed_delivery_date")
+
+  notes                String?                              // 补充备注
+
+  messages             OrderMessage[]
+  stages               OrderStage[]
+
+  @@map("orders")
+}
+
+// 订单沟通消息（用户 ↔ 传承人）
+model OrderMessage {
+  id          String    @id @default(uuid())
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  orderId     String    @map("order_id")
+  order       Order     @relation(fields: [orderId], references: [id])
+
+  senderType  String    @map("sender_type")   // "user" | "artisan" | "system"
+  userId      String?   @map("user_id")
+  user        User?     @relation(fields: [userId], references: [id])
+  artisanId   String?   @map("artisan_id")
+  artisan     Artisan?  @relation(fields: [artisanId], references: [id])
+
+  content     String
+  attachments Json      @default("[]")        // Array<{ url, type }>
+
+  @@map("order_messages")
+}
+
+// 订单进度节点（对应前端 OrderProgressScreen 的 timeline）
+model OrderStage {
+  id        String    @id @default(uuid())
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  orderId   String    @map("order_id")
+  order     Order     @relation(fields: [orderId], references: [id])
+
+  sequence  Int                              // 排序，从 0 开始
+  title     String
+  detail    String
+  // "done" | "current" | "upcoming"
+  status    String    @default("upcoming")
+  doneAt    DateTime? @map("done_at")        // 完成时间戳
+
+  @@map("order_stages")
+}
+
+// ═══════════════════════════════════════════════════════
+// 工具表
+// ═══════════════════════════════════════════════════════
+
+// 所有上传到 OSS 的文件记录
+model UploadedFile {
+  id            String    @id @default(uuid())
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  ossUrl        String    @map("oss_url")
+  mimeType      String    @map("mime_type")
+  sizeBytes     Int?      @map("size_bytes")
+  originalName  String?   @map("original_name")
+
+  // 上传来源（submisison / preview / artisan_portfolio 等）
+  sourceType    String    @map("source_type")
+  sourceId      String?   @map("source_id")
+
+  @@map("uploaded_files")
+}

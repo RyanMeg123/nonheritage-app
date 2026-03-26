@@ -3,6 +3,7 @@ export type AppScreen =
   | 'publish'
   | 'chat'
   | 'profile'
+  | 'artisan-onboarding'
   | 'craft-plan'
   | 'structured-result'
   | 'preview'
@@ -78,6 +79,8 @@ export type TimelineOption = {
   value: string;
 };
 
+export type PublishEntryMode = 'reference-image' | 'idea-only' | 'find-artisan';
+
 export type PublishPreset = {
   progressLabel: string;
   headerTitle: string;
@@ -99,6 +102,7 @@ export type PublishPreset = {
 };
 
 export type PublishFormState = {
+  entryMode: PublishEntryMode;
   uploadedImages: UploadImagePlaceholder[];
   requirementText: string;
   preferredCraftId: string;
@@ -287,4 +291,37 @@ export type ProfileScreenData = {
   recentItems: string[];
   accountTitle: string;
   accountItems: ActionCard[];
+};
+
+export type OnboardingRequirement = {
+  id: string;
+  title: string;
+  description: string;
+};
+
+export type OnboardingStep = {
+  id: string;
+  label: string;
+  state: 'done' | 'current' | 'upcoming';
+};
+
+export type OnboardingScreenData = {
+  headerTitle: string;
+  headerSubtitle: string;
+  badgeLabel: string;
+  leadEyebrow: string;
+  leadEstimate: string;
+  leadTitle: string;
+  leadSummary: string;
+  steps: OnboardingStep[];
+  requirementTitle: string;
+  requirements: OnboardingRequirement[];
+  reviewTitle: string;
+  reviewText: string;
+  draftTitle: string;
+  draftDescription: string;
+  submitTitle: string;
+  submitDescription: string;
+  ctaLabel: string;
+  footerNote: string;
 };

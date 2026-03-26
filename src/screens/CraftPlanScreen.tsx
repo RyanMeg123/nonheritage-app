@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { BackChip, BodyText, DisplayText, PillButton, ScreenShell, SectionCard } from '../components/common';
+import { BodyText, PageHeaderCard, PillButton, ScreenShell, SectionCard } from '../components/common';
 import { colors, radii, typography } from '../theme/tokens';
 import type { CraftPlanData } from '../types';
 
@@ -22,19 +22,13 @@ export function CraftPlanScreen({
         </View>
       }
     >
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <BackChip onPress={onBack} />
-          <View style={styles.headerCopy}>
-            <BodyText style={styles.headerEyebrow}>gentle plan</BodyText>
-            <DisplayText style={styles.headerTitle}>{plan.headerTitle}</DisplayText>
-            <BodyText>{plan.headerSubtitle}</BodyText>
-          </View>
-        </View>
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>{plan.badgeLabel}</Text>
-        </View>
-      </View>
+      <PageHeaderCard
+        eyebrow="方案判断"
+        title={plan.headerTitle}
+        subtitle={plan.headerSubtitle}
+        badge={plan.badgeLabel}
+        onBack={onBack}
+      />
 
       <SectionCard tone="paper" style={styles.heroCard}>
         <View style={styles.heroSky} />
@@ -108,43 +102,6 @@ function CardTitleLike({ children }: { children: string }) {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    gap: 12,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    gap: 12,
-    alignItems: 'flex-start',
-    flex: 1,
-  },
-  headerCopy: {
-    flex: 1,
-    gap: 2,
-    paddingTop: 2,
-  },
-  headerEyebrow: {
-    color: colors.accentBurgundy,
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  headerTitle: {
-    fontSize: 31,
-  },
-  badge: {
-    borderRadius: radii.pill,
-    backgroundColor: colors.sky,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  badgeText: {
-    color: colors.textPrimary,
-    fontFamily: typography.body,
-    fontSize: 12,
-    fontWeight: '700',
-  },
   heroCard: {
     overflow: 'hidden',
     backgroundColor: '#FFFDF9',
@@ -204,8 +161,8 @@ const styles = StyleSheet.create({
   planSummary: {
     color: colors.textSecondary,
     fontFamily: typography.body,
-    fontSize: 14,
-    lineHeight: 21,
+    fontSize: 15,
+    lineHeight: 23,
   },
   heroMood: {
     width: 108,

@@ -6,6 +6,7 @@ import type {
   CraftPlanData,
   InfoPair,
   JourneyFlowData,
+  OnboardingScreenData,
   ProfileScreenData,
   ProgressStage,
   PublishFormState,
@@ -386,5 +387,50 @@ export function buildProfileData(plan: CraftPlanData): ProfileScreenData {
         description: '如果你也有工坊或团队，可以申请入驻平台。',
       },
     ],
+  };
+}
+
+export function buildOnboardingData(): OnboardingScreenData {
+  return {
+    headerTitle: '入驻认证',
+    headerSubtitle: '先完成资料审核，再进入接单',
+    badgeLabel: '步骤 1 / 3',
+    leadEyebrow: '认证说明',
+    leadEstimate: '预计 1-2 天审核',
+    leadTitle: '提交真实工艺信息、代表作品和履历后，平台才会开放正式接单。',
+    leadSummary:
+      '这一步不是做复杂后台资料，而是让用户和平台都能明确知道你擅长什么、适合接什么单。',
+    steps: [
+      { id: 'step-1', label: '资料准备', state: 'current' },
+      { id: 'step-2', label: '平台审核', state: 'upcoming' },
+      { id: 'step-3', label: '开放接单', state: 'upcoming' },
+    ],
+    requirementTitle: '需要提交的资料',
+    requirements: [
+      {
+        id: 'requirement-1',
+        title: '基本身份信息',
+        description: '姓名、所在城市、常用联系方式。',
+      },
+      {
+        id: 'requirement-2',
+        title: '擅长工艺与履历',
+        description: '说明你主要做扎染、苏绣还是银饰，以及相关年限。',
+      },
+      {
+        id: 'requirement-3',
+        title: '代表作品',
+        description: '至少上传 3 组能代表工艺水平的作品图。',
+      },
+    ],
+    reviewTitle: '审核通过后',
+    reviewText:
+      '你会获得接单资格、传承人主页和匹配机会。若资料不完整，平台会退回并要求补充。',
+    draftTitle: '保存草稿',
+    draftDescription: '稍后继续补资料',
+    submitTitle: '提交审核',
+    submitDescription: '进入平台人工审核',
+    ctaLabel: '提交认证资料',
+    footerNote: '通过审核后，平台才会开放正式接单与匹配入口。',
   };
 }

@@ -1,5 +1,6 @@
-import { type ReactNode } from 'react';
+import { type ReactNode, useMemo, useState } from 'react';
 import {
+  LayoutChangeEvent,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -16,20 +17,48 @@ import type { MainTabId } from '../types';
 export function ScreenShell({
   children,
   footer,
+  scrollContentStyle,
 }: {
   children: ReactNode;
   footer?: ReactNode;
+  scrollContentStyle?: StyleProp<ViewStyle>;
 }) {
+  const [footerHeight, setFooterHeight] = useState(0);
+
+  const flattenedScrollStyle = StyleSheet.flatten(scrollContentStyle);
+  const customPaddingBottom =
+    flattenedScrollStyle && typeof flattenedScrollStyle.paddingBottom === 'number'
+      ? flattenedScrollStyle.paddingBottom
+      : 0;
+
+  const finalScrollContentStyle = useMemo(() => {
+    const reservedFooterSpace = footer ? footerHeight + 28 : 0;
+    const paddingBottom = Math.max(styles.scrollContent.paddingBottom, customPaddingBottom, reservedFooterSpace);
+
+    return [styles.scrollContent, scrollContentStyle, { paddingBottom }];
+  }, [customPaddingBottom, footer, footerHeight, scrollContentStyle]);
+
+  const handleFooterLayout = (event: LayoutChangeEvent) => {
+    const nextHeight = Math.ceil(event.nativeEvent.layout.height);
+    if (nextHeight !== footerHeight) {
+      setFooterHeight(nextHeight);
+    }
+  };
+
   return (
     <View style={styles.screen}>
       <ScrollView
         style={styles.scroll}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={finalScrollContentStyle}
         showsVerticalScrollIndicator={false}
       >
         {children}
       </ScrollView>
-      {footer ? <View style={styles.footerWrap}>{footer}</View> : null}
+      {footer ? (
+        <View style={styles.footerWrap} onLayout={handleFooterLayout}>
+          {footer}
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -197,20 +226,48 @@ export function MainTabBar({
 
         return (
           <Pressable key={tab.id} onPress={() => onTabPress(typedId)} style={styles.tabItem}>
-            <View
-              style={[
-                styles.tabIcon,
-                active ? styles.tabIconActive : null,
-                index === 1 ? styles.tabIconTall : null,
-                index === 2 ? styles.tabIconBook : null,
-              ]}
-            >
+            <View style={[styles.tabIcon, active ? styles.tabIconActive : null]}>
               <Text style={[styles.tabGlyph, active ? styles.tabGlyphActive : null]}>{tab.glyph}</Text>
             </View>
             <Text style={[styles.tabLabel, active ? styles.tabLabelActive : null]}>{tab.label}</Text>
           </Pressable>
         );
       })}
+    </View>
+  );
+}
+
+export function PageHeaderCard({
+  title,
+  subtitle,
+  eyebrow,
+  badge,
+  onBack,
+  style,
+}: {
+  title: string;
+  subtitle: string;
+  eyebrow: string;
+  badge?: string;
+  onBack?: () => void;
+  style?: StyleProp<ViewStyle>;
+}) {
+  return (
+    <View style={[styles.pageHeaderCard, style]}>
+      <View style={styles.pageHeaderSky} />
+      <View style={styles.pageHeaderGlow} />
+      <View style={styles.pageHeaderCloud} />
+      <View style={styles.pageHeaderTop}>
+        {onBack ? <BackChip onPress={onBack} /> : <View style={styles.pageHeaderSpacer} />}
+        {badge ? (
+          <View style={styles.pageHeaderBadge}>
+            <Text style={styles.pageHeaderBadgeText}>{badge}</Text>
+          </View>
+        ) : null}
+      </View>
+      <Text style={styles.pageHeaderEyebrow}>{eyebrow}</Text>
+      <DisplayText style={styles.pageHeaderTitle}>{title}</DisplayText>
+      <BodyText style={styles.pageHeaderSubtitle}>{subtitle}</BodyText>
     </View>
   );
 }
@@ -420,19 +477,13 @@ const styles = StyleSheet.create({
   tabIcon: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#FFF4EC',
   },
   tabIconActive: {
     backgroundColor: colors.accentBurgundy,
-  },
-  tabIconTall: {
-    borderRadius: 16,
-  },
-  tabIconBook: {
-    borderRadius: 14,
   },
   tabGlyph: {
     color: colors.textSecondary,
@@ -449,5 +500,85 @@ const styles = StyleSheet.create({
   },
   tabLabelActive: {
     color: colors.textPrimary,
+  },
+  pageHeaderCard: {
+    minHeight: 172,
+    borderRadius: 32,
+    overflow: 'hidden',
+    paddingHorizontal: 20,
+    paddingTop: 18,
+    paddingBottom: 20,
+    backgroundColor: '#FDF9F4',
+    borderWidth: 1,
+    borderColor: 'rgba(241,223,210,0.88)',
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 14 },
+    shadowOpacity: 0.85,
+    shadowRadius: 24,
+    elevation: 8,
+    gap: 6,
+  },
+  pageHeaderSky: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: colors.sky,
+    opacity: 0.36,
+  },
+  pageHeaderGlow: {
+    position: 'absolute',
+    right: -22,
+    top: 26,
+    width: 132,
+    height: 132,
+    borderRadius: 66,
+    backgroundColor: 'rgba(255,232,184,0.5)',
+  },
+  pageHeaderCloud: {
+    position: 'absolute',
+    left: -16,
+    top: 98,
+    width: 136,
+    height: 44,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255,255,255,0.84)',
+  },
+  pageHeaderTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    minHeight: 44,
+    marginBottom: 6,
+  },
+  pageHeaderBadge: {
+    borderRadius: radii.pill,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: 'rgba(255,255,255,0.72)',
+  },
+  pageHeaderSpacer: {
+    width: 44,
+    height: 44,
+  },
+  pageHeaderBadgeText: {
+    color: colors.textPrimary,
+    fontFamily: typography.body,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  pageHeaderEyebrow: {
+    color: colors.accentBurgundy,
+    fontFamily: typography.body,
+    fontSize: 13,
+    fontWeight: '600',
+    letterSpacing: 0.4,
+  },
+  pageHeaderTitle: {
+    fontSize: 30,
+    lineHeight: 36,
+    maxWidth: '86%',
+  },
+  pageHeaderSubtitle: {
+    fontSize: 15,
+    lineHeight: 22,
+    maxWidth: '78%',
   },
 });
