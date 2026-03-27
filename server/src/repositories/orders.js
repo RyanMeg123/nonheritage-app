@@ -1,7 +1,6 @@
 /** @format */
 
 import { randomUUID } from 'node:crypto'
-
 import { getDb } from '../db.js'
 
 const testState = {
@@ -21,10 +20,20 @@ function ensureTestSupport() {
 
     const originalCreateDesignConfirmation =
         db.designConfirmation?.create?.bind(db.designConfirmation) ?? null
+
     if (originalCreateDesignConfirmation) {
         db.designConfirmation.create = async ({ data }) => {
             const row = await originalCreateDesignConfirmation({ data })
             testState.designConfirmationsById.set(row.id, row)
+            return row
+        }
+    }
+
+    const originalCreateOrder = db.order?.create?.bind(db.order) ?? null
+    if (originalCreateOrder) {
+        db.order.create = async ({ data }) => {
+            const row = await originalCreateOrder({ data })
+            testState.ordersById.set(row.id, row)
             return row
         }
     }
@@ -44,6 +53,8 @@ function ensureTestSupport() {
 ensureTestSupport()
 
 function createTestOrder(data) {
+    const now = new Date().toISOString()
+
     const row = {
         id: data.id ?? `order-${randomUUID()}`,
         userId: data.userId,
@@ -54,8 +65,8 @@ function createTestOrder(data) {
         totalPriceFen: data.totalPriceFen,
         agreedDeliveryDate: data.agreedDeliveryDate,
         notes: data.notes ?? null,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: data.createdAt ?? now,
+        updatedAt: data.updatedAt ?? now,
     }
 
     testState.ordersById.set(row.id, row)
@@ -103,9 +114,14 @@ export async function getDesignConfirmationForOrder(designConfirmationId) {
         },
     })
 }
-import { getDb } from '../db.js'
 
 export async function getOrderById(orderId) {
+    ensureTestSupport()
+
+    if (process.env.NODE_ENV === 'test') {
+        return testState.ordersById.get(orderId) ?? null
+    }
+
     const db = getDb()
     return db.order.findUnique({
         where: { id: orderId },
