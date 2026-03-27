@@ -155,30 +155,42 @@ export async function request<T>(
   const { unwrapData = true, ...requestOptions } = options ?? {};
   const body = requestOptions.body;
   const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
+  const url = `${BASE_URL}${path}`;
 
   const headers = isFormData
     ? requestOptions.headers
     : { 'Content-Type': 'application/json', ...requestOptions.headers };
 
-  const res = await fetch(`${BASE_URL}${path}`, {
-    ...requestOptions,
-    headers,
-  });
+  console.log('[REQ]', url, { ...requestOptions, headers });
 
-  const text = await res.text();
-  const json = text ? JSON.parse(text) : null;
-
-  if (!res.ok) {
-    const msg = json?.error?.message ?? `请求失败 (${res.status})`;
-    throw new ApiRequestError(msg, {
-      status: res.status,
-      code: json?.error?.code,
-      details: json?.error?.details,
-      traceId: json?.error?.traceId,
+  try {
+    const res = await fetch(url, {
+      ...requestOptions,
+      headers,
     });
-  }
 
-  return (unwrapData ? json?.data : json) as T;
+    console.log('[RES STATUS]', res.status);
+
+    const text = await res.text();
+    console.log('[RES BODY]', text);
+
+    const json = text ? JSON.parse(text) : null;
+
+    if (!res.ok) {
+      const msg = json?.error?.message ?? `请求失败 (${res.status})`;
+      throw new ApiRequestError(msg, {
+        status: res.status,
+        code: json?.error?.code,
+        details: json?.error?.details,
+        traceId: json?.error?.traceId,
+      });
+    }
+
+    return (unwrapData ? json?.data : json) as T;
+  } catch (error) {
+    console.log('[RES ERROR]', error);
+    throw error;
+  }
 }
 
 // ── 对外暴露的 API 方法 ───────────────────────────────────────────

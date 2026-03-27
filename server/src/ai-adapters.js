@@ -45,7 +45,7 @@ async function callText({ messages, maxTokens = 1500 }) {
     },
     body: JSON.stringify({
       model: TEXT_MODEL,
-      max_tokens: maxTokens,
+      max_completion_tokens: maxTokens,
       messages,
     }),
   });
@@ -343,7 +343,11 @@ async function callTextArray({ messages, maxTokens = 1500 }) {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${apiKey}`,
     },
-    body: JSON.stringify({ model: TEXT_MODEL, max_tokens: maxTokens, messages }),
+    body: JSON.stringify({
+      model: TEXT_MODEL,
+      max_completion_tokens: maxTokens,
+      messages,
+    }),
   });
 
   const json = await res.json();
@@ -401,7 +405,7 @@ async function runArtisanMatcherImpl(submission, structuredRequirement) {
 
   const matches = Array.isArray(parsed) ? parsed : [parsed];
   return matches.map((m, i) => ({
-    id:             m.id              ?? `artisan-ai-${randomUUID()}`,
+    id:             `artisan-${randomUUID()}`,
     planId:         '',
     name:           m.name            ?? `传承人 ${i + 1}`,
     craftExpertise: m.craftExpertise  ?? req.craftPreference,
