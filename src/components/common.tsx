@@ -17,6 +17,7 @@ import {
     type StyleProp,
     type ViewStyle,
 } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { colors, radii, typography } from '../theme/tokens'
 import type { MainTabId } from '../types'
@@ -42,12 +43,18 @@ export function ScreenShell({
     scrollContentStyle?: StyleProp<ViewStyle>
 }) {
     const [footerHeight, setFooterHeight] = useState(0)
+    const insets = useSafeAreaInsets()
 
     const flattenedScrollStyle = StyleSheet.flatten(scrollContentStyle)
     const customPaddingBottom =
         flattenedScrollStyle &&
         typeof flattenedScrollStyle.paddingBottom === 'number'
             ? flattenedScrollStyle.paddingBottom
+            : 0
+    const customPaddingTop =
+        flattenedScrollStyle &&
+        typeof flattenedScrollStyle.paddingTop === 'number'
+            ? flattenedScrollStyle.paddingTop
             : 0
 
     const finalScrollContentStyle = useMemo(() => {
@@ -57,9 +64,14 @@ export function ScreenShell({
             customPaddingBottom,
             reservedFooterSpace,
         )
+        const paddingTop = Math.max(
+            styles.scrollContent.paddingTop,
+            insets.top + -100,
+            customPaddingTop,
+        )
 
-        return [styles.scrollContent, scrollContentStyle, { paddingBottom }]
-    }, [customPaddingBottom, footer, footerHeight, scrollContentStyle])
+        return [styles.scrollContent, scrollContentStyle, { paddingTop, paddingBottom }]
+    }, [customPaddingBottom, customPaddingTop, footer, footerHeight, insets.top, scrollContentStyle])
 
     const handleFooterLayout = (event: LayoutChangeEvent) => {
         const nextHeight = Math.ceil(event.nativeEvent.layout.height)
@@ -876,7 +888,7 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     scrollContent: {
-        paddingTop: 14,
+        paddingTop: 26,
         paddingHorizontal: 20,
         paddingBottom: 160,
         gap: 18,

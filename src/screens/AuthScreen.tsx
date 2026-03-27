@@ -7,7 +7,7 @@ import { colors, radii, typography } from '../theme/tokens';
 import type { AuthLoadingStage } from '../features/auth/hooks/useAuthSession';
 import type { PhoneCheckResult } from '../types/auth';
 
-const authFigure = require('../../assets/illustrations/email-girl.jpeg');
+const authFigure = require('../../assets/illustrations/home2.png');
 
 function normalizePhone(value: string) {
   return value.replace(/[^\d]/g, '').slice(0, 11);
@@ -204,8 +204,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   heroCopy: {
-    maxWidth: 216,
+    maxWidth: '100%',
+    paddingRight: 112,
     gap: 10,
+    zIndex: 2,
   },
   heroEyebrow: {
     color: colors.accentBurgundy,
@@ -228,26 +230,26 @@ const styles = StyleSheet.create({
   },
   heroFigureWrap: {
     position: 'absolute',
-    right: 18,
+    right: -6,
     bottom: 0,
-    width: 188,
-    height: 220,
+    width: 160,
+    height: 192,
     alignItems: 'center',
     justifyContent: 'flex-end',
   },
   heroHalo: {
     position: 'absolute',
-    top: 10,
-    width: 176,
-    height: 176,
-    borderRadius: 88,
+    top: 8,
+    width: 156,
+    height: 156,
+    borderRadius: 78,
     backgroundColor: 'rgba(247, 238, 231, 0.96)',
   },
   heroFigure: {
-    width: 176,
-    height: 208,
-    borderTopLeftRadius: 80,
-    borderTopRightRadius: 80,
+    width: 156,
+    height: 184,
+    borderTopLeftRadius: 68,
+    borderTopRightRadius: 68,
   },
   formCard: {
     gap: 18,

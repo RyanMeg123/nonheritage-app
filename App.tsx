@@ -3,7 +3,7 @@
 import { StatusBar } from 'expo-status-bar'
 import { useState } from 'react'
 import { StyleSheet, View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
 
 import { publishPreset } from './src/data/mockData'
 import { AppNavigator } from './src/application/AppNavigator'
@@ -71,75 +71,71 @@ export default function App() {
     const publishLoading = publishFlow.loadingStage !== 'idle'
     const orderLoading = orderFlow.loadingStage !== 'idle'
 
-    if (appEntryGate.showSplash) {
-        return (
-            <SafeAreaView style={styles.safeArea}>
-                <StatusBar style="dark" />
-                <LaunchScreen />
-            </SafeAreaView>
-        )
-    }
-
-    if (orderLoading) {
-        return (
-            <SafeAreaView style={styles.safeArea}>
-                <StatusBar style="dark" />
-                <View style={styles.appFrame}>
-                    <PublishFlowStateScreen
-                        badge="订单处理中"
-                        title="正在准备订单信息"
-                        message="这一步会先创建订单，再读取详情页需要的核心字段。"
-                        primaryLabel="请稍候"
-                        onPrimaryPress={() => undefined}
-                    />
-                </View>
-            </SafeAreaView>
-        )
-    }
-
     return (
-        <SafeAreaView style={styles.safeArea}>
-            <StatusBar style="dark" />
-            <AppNavigator
-                screen={screen}
-                appFrameStyle={styles.appFrame}
-                formState={publishFlow.formState}
-                onFormChange={publishFlow.handleFormChange}
-                onPublishContinue={() => {
-                    void publishFlow.handlePublishContinue()
-                }}
-                onPublishContinueReuse={() => {
-                    void publishFlow.handlePublishContinue({
-                        reuseSubmission: Boolean(publishFlow.submitResult),
-                    })
-                }}
-                publishLoading={publishLoading}
-                goTo={goTo}
-                goToTab={goToTab}
-                submitResult={publishFlow.submitResult}
-                planResult={publishFlow.planResult}
-                serverPlanData={screenData.serverPlanData}
-                serverStructuredData={screenData.serverStructuredData}
-                serverPreviewData={screenData.serverPreviewData}
-                serverPreviewUri={screenData.serverPreviewUri}
-                serverPreviewUris={screenData.serverPreviewUris}
-                serverSourceImageUris={screenData.serverSourceImageUris}
-                serverMatchData={screenData.serverMatchData}
-                serverDesignConfirmData={screenData.serverDesignConfirmData}
-                serverOrderDetailData={screenData.serverOrderDetailData}
-                journeyData={screenData.journeyData}
-                profileData={screenData.profileData}
-                onboardingData={screenData.onboardingData}
-                orderBackScreen={orderFlow.orderBackScreen}
-                onboardingStatus={onboardingStatus}
-                onSetOnboardingStatus={setOnboardingStatus}
-                onOpenOrderProgress={orderFlow.handleOpenOrderProgress}
-                onCreateOrder={() => {
-                    void orderFlow.handleCreateOrder()
-                }}
-                authBindings={authFlow.navigatorProps}
-            />
-        </SafeAreaView>
+        <SafeAreaProvider>
+            {appEntryGate.showSplash ? (
+                <SafeAreaView style={styles.safeArea}>
+                    <StatusBar style="dark" />
+                    <LaunchScreen />
+                </SafeAreaView>
+            ) : orderLoading ? (
+                <SafeAreaView style={styles.safeArea}>
+                    <StatusBar style="dark" />
+                    <View style={styles.appFrame}>
+                        <PublishFlowStateScreen
+                            badge="订单处理中"
+                            title="正在准备订单信息"
+                            message="这一步会先创建订单，再读取详情页需要的核心字段。"
+                            primaryLabel="请稍候"
+                            onPrimaryPress={() => undefined}
+                        />
+                    </View>
+                </SafeAreaView>
+            ) : (
+                <SafeAreaView style={styles.safeArea}>
+                    <StatusBar style="dark" />
+                    <AppNavigator
+                        screen={screen}
+                        appFrameStyle={styles.appFrame}
+                        formState={publishFlow.formState}
+                        onFormChange={publishFlow.handleFormChange}
+                        onPublishContinue={() => {
+                            void publishFlow.handlePublishContinue()
+                        }}
+                        onPublishContinueReuse={() => {
+                            void publishFlow.handlePublishContinue({
+                                reuseSubmission: Boolean(publishFlow.submitResult),
+                            })
+                        }}
+                        publishLoading={publishLoading}
+                        goTo={goTo}
+                        goToTab={goToTab}
+                        submitResult={publishFlow.submitResult}
+                        planResult={publishFlow.planResult}
+                        serverPlanData={screenData.serverPlanData}
+                        serverStructuredData={screenData.serverStructuredData}
+                        serverPreviewData={screenData.serverPreviewData}
+                        serverPreviewUri={screenData.serverPreviewUri}
+                        serverPreviewUris={screenData.serverPreviewUris}
+                        serverSourceImageUris={screenData.serverSourceImageUris}
+                        serverMatchData={screenData.serverMatchData}
+                        serverDesignConfirmData={screenData.serverDesignConfirmData}
+                        serverOrderDetailData={screenData.serverOrderDetailData}
+                        journeyData={screenData.journeyData}
+                        profileData={screenData.profileData}
+                        onboardingData={screenData.onboardingData}
+                        orderBackScreen={orderFlow.orderBackScreen}
+                        onboardingStatus={onboardingStatus}
+                        onSetOnboardingStatus={setOnboardingStatus}
+                        onOpenOrderProgress={orderFlow.handleOpenOrderProgress}
+                        onCreateOrder={() => {
+                            void orderFlow.handleCreateOrder()
+                        }}
+                        authBindings={authFlow.navigatorProps}
+                    />
+                </SafeAreaView>
+            )}
+        </SafeAreaProvider>
     )
 }
 
