@@ -4,6 +4,8 @@ import { buildJourneyFlow, buildOnboardingData, buildProfileData } from '../util
 import { buildCraftPlanFromForm } from '../utils/planBuilder';
 import {
   getPreviewImageUri,
+  getPreviewImageUris,
+  getSourceImageUris,
   mapArtisanMatches,
   mapCraftPlan,
   mapDesignConfirmation,
@@ -52,6 +54,16 @@ export function useAppScreenData({
     return getPreviewImageUri(serverData.planResult.preview);
   }, [serverData]);
 
+  const serverPreviewUris = useMemo(() => {
+    if (!serverData) return [];
+    return getPreviewImageUris(serverData.planResult.preview);
+  }, [serverData]);
+
+  const serverSourceImageUris = useMemo(() => {
+    if (!serverData) return [];
+    return getSourceImageUris(serverData.planResult.preview);
+  }, [serverData]);
+
   const serverMatchData = useMemo<MatchScreenData | null>(() => {
     if (!serverData) return null;
     return mapArtisanMatches(serverData.planResult.matches, serverData.planResult.plan);
@@ -77,6 +89,8 @@ export function useAppScreenData({
     serverStructuredData,
     serverPreviewData,
     serverPreviewUri,
+    serverPreviewUris,
+    serverSourceImageUris,
     serverMatchData,
     serverDesignConfirmData,
     serverOrderDetailData,

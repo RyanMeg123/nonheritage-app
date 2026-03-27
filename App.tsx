@@ -2,7 +2,8 @@
 
 import { StatusBar } from 'expo-status-bar'
 import { useState } from 'react'
-import { SafeAreaView, StyleSheet, View } from 'react-native'
+import { StyleSheet, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { publishPreset } from './src/data/mockData'
 import { AppNavigator } from './src/application/AppNavigator'
@@ -121,6 +122,8 @@ export default function App() {
                 serverStructuredData={screenData.serverStructuredData}
                 serverPreviewData={screenData.serverPreviewData}
                 serverPreviewUri={screenData.serverPreviewUri}
+                serverPreviewUris={screenData.serverPreviewUris}
+                serverSourceImageUris={screenData.serverSourceImageUris}
                 serverMatchData={screenData.serverMatchData}
                 serverDesignConfirmData={screenData.serverDesignConfirmData}
                 serverOrderDetailData={screenData.serverOrderDetailData}

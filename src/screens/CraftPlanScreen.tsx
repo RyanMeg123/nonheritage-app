@@ -8,12 +8,10 @@ import type { CraftPlanData, PlanReason } from '../types';
 
 export function CraftPlanScreen({
   plan,
-  debugJson,
   onBack,
   onNext,
 }: {
   plan: CraftPlanData;
-  debugJson?: string;
   onBack: () => void;
   onNext: () => void;
 }) {
@@ -54,36 +52,26 @@ export function CraftPlanScreen({
         onBack={onBack}
       />
 
-      {debugJson ? (
-        <SectionCard tone="paper" style={styles.debugCard}>
-          <Text style={styles.debugTitle}>后端返回原始 JSON</Text>
-          <View style={styles.debugBlock}>
-            <Text style={styles.debugJson}>{debugJson}</Text>
-          </View>
-        </SectionCard>
-      ) : null}
-
       <SectionCard tone="paper" style={styles.heroCard}>
         <View style={styles.heroSky} />
-        <View style={styles.heroGlow} />
         <View style={styles.heroMist} />
+        <PlanVisual supportLabel={plan.supportLabel} />
 
         <View style={styles.heroTop}>
           <View style={styles.heroCopy}>
-            <View style={styles.heroPills}>
-              <View style={styles.heroPill}>
-                <Text style={styles.heroPillText}>{plan.craftLabel}</Text>
+            <View style={styles.heroLead}>
+              <View style={styles.heroPills}>
+                <View style={styles.heroPill}>
+                  <Text style={styles.heroPillText}>{plan.craftLabel}</Text>
+                </View>
+                <View style={[styles.heroPill, styles.heroPillSoft]}>
+                  <Text style={styles.heroPillText}>{plan.badgeLabel}</Text>
+                </View>
               </View>
-              <View style={[styles.heroPill, styles.heroPillSoft]}>
-                <Text style={styles.heroPillText}>{plan.badgeLabel}</Text>
-              </View>
+              <Text style={styles.planTitle}>{plan.title}</Text>
             </View>
-
-            <Text style={styles.planTitle}>{plan.title}</Text>
             <Text style={styles.planSummary}>{plan.summary}</Text>
           </View>
-
-          <PlanVisual supportLabel={plan.supportLabel} />
         </View>
 
         <View style={styles.heroDecisionCard}>
@@ -201,7 +189,9 @@ function ResultCard({
         <Feather name={icon} size={16} color={colors.accentBurgundy} />
       </View>
       <BodyText style={styles.resultLabel}>{label}</BodyText>
-      <Text style={styles.resultValue}>{value}</Text>
+      <Text style={styles.resultValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72}>
+        {value}
+      </Text>
       <BodyText style={styles.resultNote}>{note}</BodyText>
     </View>
   );
@@ -222,27 +212,6 @@ function ReasonRow({ reason, lead }: { reason: PlanReason; lead: boolean }) {
 }
 
 const styles = StyleSheet.create({
-  debugCard: {
-    gap: 12,
-  },
-  debugTitle: {
-    color: colors.textPrimary,
-    fontFamily: typography.body,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  debugBlock: {
-    borderRadius: radii.l,
-    backgroundColor: '#F8F1EB',
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-  },
-  debugJson: {
-    color: colors.textPrimary,
-    fontFamily: 'Courier',
-    fontSize: 12,
-    lineHeight: 18,
-  },
   heroCard: {
     overflow: 'hidden',
     backgroundColor: '#FFFDF9',
@@ -252,15 +221,6 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     backgroundColor: colors.sky,
     opacity: 0.32,
-  },
-  heroGlow: {
-    position: 'absolute',
-    right: -24,
-    top: 22,
-    width: 148,
-    height: 148,
-    borderRadius: 74,
-    backgroundColor: 'rgba(255,228,163,0.34)',
   },
   heroMist: {
     position: 'absolute',
@@ -272,14 +232,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.76)',
   },
   heroTop: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'stretch',
     gap: 14,
   },
   heroCopy: {
-    flex: 1,
     gap: 12,
-    paddingRight: 4,
+  },
+  heroLead: {
+    gap: 12,
+    paddingRight: 128,
   },
   heroPills: {
     flexDirection: 'row',
@@ -315,12 +276,13 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   planVisualWrap: {
+    position: 'absolute',
+    right: 26,
+    top: 30,
     width: 118,
     height: 132,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 2,
-    marginTop: 6,
   },
   planSheet: {
     position: 'absolute',
@@ -483,7 +445,8 @@ const styles = StyleSheet.create({
   resultValue: {
     color: colors.textPrimary,
     fontFamily: typography.body,
-    fontSize: 24,
+    fontSize: 22,
+    lineHeight: 30,
     fontWeight: '700',
   },
   resultNote: {

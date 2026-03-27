@@ -1,6 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import type { ComponentProps } from 'react';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { Image, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { BodyText, PageHeaderCard, ScreenShell, SectionCard } from '../components/common';
 import { colors, radii, typography } from '../theme/tokens';
@@ -15,14 +16,22 @@ function getActionIcon(index: number): ComponentProps<typeof Feather>['name'] {
 export function PreviewScreen({
   data,
   previewUri,
+  previewUris,
+  sourceImageUris,
   onBack,
   onNext,
 }: {
   data: PreviewScreenData;
   previewUri?: string;
+  previewUris: string[];
+  sourceImageUris: string[];
   onBack: () => void;
   onNext: () => void;
 }) {
+  const galleryUris = previewUris.length ? previewUris : previewUri ? [previewUri] : [];
+  const hasReferenceImages = sourceImageUris.length > 0;
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+
   return (
     <ScreenShell
       footer={
@@ -62,7 +71,10 @@ export function PreviewScreen({
 
       <SectionCard tone="paper" style={styles.heroCard}>
         <View style={styles.heroSky} />
-        <View style={styles.heroGlow} />
+        <View style={styles.heroBadgeFloat}>
+          <Feather name="eye" size={15} color={colors.accentBurgundy} />
+          <Text style={styles.heroBadgeFloatText}>{data.badgeLabel}</Text>
+        </View>
         <View style={styles.heroTop}>
           <View style={styles.heroCopy}>
             <View style={styles.heroPills}>
@@ -85,7 +97,9 @@ export function PreviewScreen({
           </View>
 
           {previewUri ? (
-            <Image source={{ uri: previewUri }} style={styles.heroImage} resizeMode="cover" />
+            <Pressable style={styles.heroImagePressable} onPress={() => setIsPreviewOpen(true)}>
+              <Image source={{ uri: previewUri }} style={styles.heroImage} resizeMode="cover" />
+            </Pressable>
           ) : (
             <View style={styles.placeholderScene}>
               <View style={styles.placeholderGlow} />
@@ -112,6 +126,29 @@ export function PreviewScreen({
             <BodyText style={styles.previewSummaryText}>最终交付承诺或锁死的细节版本</BodyText>
           </View>
         </View>
+
+        {hasReferenceImages ? (
+          <View style={styles.gallerySection}>
+            <View style={styles.galleryHead}>
+              <Text style={styles.galleryTitle}>参考输入图</Text>
+              <BodyText style={styles.galleryCopy}>如果你上传了灵感图，这里会保留本次生成时使用的参考素材。</BodyText>
+            </View>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.galleryRow}
+            >
+              {sourceImageUris.map((uri, index) => (
+                <Image
+                  key={`${uri}-${index}`}
+                  source={{ uri }}
+                  style={styles.referenceImage}
+                  resizeMode="cover"
+                />
+              ))}
+            </ScrollView>
+          </View>
+        ) : null}
       </SectionCard>
 
       <SectionCard tone="warn" bordered={false} style={styles.noticeCard}>
@@ -138,6 +175,27 @@ export function PreviewScreen({
           ))}
         </View>
       </SectionCard>
+
+      <Modal
+        visible={isPreviewOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setIsPreviewOpen(false)}
+      >
+        <Pressable style={styles.previewModalBackdrop} onPress={() => setIsPreviewOpen(false)}>
+          <Pressable style={styles.previewModalCard} onPress={() => undefined}>
+            <View style={styles.previewModalTop}>
+              <Text style={styles.previewModalTitle}>预览大图</Text>
+              <Pressable style={styles.previewModalClose} onPress={() => setIsPreviewOpen(false)}>
+                <Feather name="x" size={18} color={colors.textInverse} />
+              </Pressable>
+            </View>
+            {previewUri ? (
+              <Image source={{ uri: previewUri }} style={styles.previewModalImage} resizeMode="contain" />
+            ) : null}
+          </Pressable>
+        </Pressable>
+      </Modal>
     </ScreenShell>
   );
 }
@@ -168,20 +226,33 @@ const styles = StyleSheet.create({
     backgroundColor: colors.sky,
     opacity: 0.24,
   },
-  heroGlow: {
+  heroBadgeFloat: {
     position: 'absolute',
-    right: -30,
-    top: 24,
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    backgroundColor: 'rgba(255,228,163,0.28)',
+    right: 18,
+    top: 18,
+    zIndex: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    borderRadius: radii.pill,
+    backgroundColor: 'rgba(255,253,251,0.94)',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(228,200,190,0.54)',
+  },
+  heroBadgeFloatText: {
+    color: colors.accentBurgundy,
+    fontFamily: typography.body,
+    fontSize: 12,
+    fontWeight: '700',
   },
   heroTop: {
     gap: 10,
   },
   heroCopy: {
     gap: 12,
+    paddingRight: 92,
   },
   heroPills: {
     flexDirection: 'row',
@@ -206,8 +277,8 @@ const styles = StyleSheet.create({
   heroTitle: {
     color: colors.textPrimary,
     fontFamily: typography.display,
-    fontSize: 28,
-    lineHeight: 36,
+    fontSize: 26,
+    lineHeight: 34,
     fontWeight: '600',
   },
   heroNote: {
@@ -246,6 +317,9 @@ const styles = StyleSheet.create({
   heroImage: {
     width: '100%',
     height: '100%',
+  },
+  heroImagePressable: {
+    flex: 1,
   },
   placeholderScene: {
     flex: 1,
@@ -320,6 +394,31 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(228,200,190,0.54)',
     padding: 14,
+  },
+  gallerySection: {
+    gap: 10,
+  },
+  galleryHead: {
+    gap: 4,
+  },
+  galleryTitle: {
+    color: colors.textPrimary,
+    fontFamily: typography.body,
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  galleryCopy: {
+    fontSize: 13,
+  },
+  galleryRow: {
+    gap: 10,
+    paddingRight: 6,
+  },
+  referenceImage: {
+    width: 118,
+    height: 118,
+    borderRadius: 18,
+    backgroundColor: '#F3E5DA',
   },
   previewSummaryItem: {
     flex: 1,
@@ -428,6 +527,45 @@ const styles = StyleSheet.create({
     fontFamily: typography.body,
     fontSize: 15,
     fontWeight: '700',
+  },
+  previewModalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(15,20,31,0.84)',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 40,
+  },
+  previewModalCard: {
+    borderRadius: 28,
+    overflow: 'hidden',
+    backgroundColor: '#171D27',
+  },
+  previewModalTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 18,
+    paddingTop: 18,
+    paddingBottom: 10,
+  },
+  previewModalTitle: {
+    color: colors.textInverse,
+    fontFamily: typography.body,
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  previewModalClose: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.14)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  previewModalImage: {
+    width: '100%',
+    height: 520,
+    backgroundColor: '#171D27',
   },
   footerContent: {
     gap: 10,

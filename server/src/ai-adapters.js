@@ -24,6 +24,28 @@ const AIHUBMIX_BASE_URL = 'https://aihubmix.com';
 const TEXT_MODEL        = 'gpt-5.3-chat-latest';
 const IMAGE_MODEL       = 'doubao-seedream-5.0-lite';
 
+function isRemoteHttpUrl(url) {
+  return typeof url === 'string' && /^https?:\/\//i.test(url);
+}
+
+function normalizeImageOutputUrl(value) {
+  if (typeof value === 'string') {
+    return value;
+  }
+
+  if (value && typeof value === 'object') {
+    if (typeof value.url === 'string') {
+      return value.url;
+    }
+
+    if (typeof value.image_url === 'string') {
+      return value.image_url;
+    }
+  }
+
+  return null;
+}
+
 function getApiKey() {
   const key = process.env.AIHUBMIX_API_KEY;
   if (!key) throw new Error('未设置 AIHUBMIX_API_KEY 环境变量');
@@ -100,8 +122,15 @@ async function callImageGen({ prompt, imageUrls = [] }) {
 
   // 兼容同步返回（output 字段）和异步轮询（status === 'succeeded'）
   const output = json.output ?? json.data?.output ?? [];
-  const urls = Array.isArray(output) ? output : [output];
-  return urls.filter(Boolean);
+  const urls = (Array.isArray(output) ? output : [output])
+    .map(normalizeImageOutputUrl)
+    .filter(Boolean);
+
+  if (urls.length === 0) {
+    throw new Error('aihubmix 图像接口返回为空或格式不正确');
+  }
+
+  return urls;
 }
 
 // ── 环境变量控制各 adapter 是否走真实 AI ─────────────────────────
@@ -120,12 +149,18 @@ async function runRequirementParser(submission) {
     return buildStructuredRequirement(submission);
   }
 
+  const imageContent = (submission.images ?? [])
+    .slice(0, 3)
+    .map((img) => img?.url)
+    .filter(isRemoteHttpUrl)
+    .map((url) => ({
+      type: 'image_url',
+      image_url: { url },
+    }));
+
   // 多模态 content：图片在前，文字在后
   const userContent = [
-    ...(submission.images ?? []).slice(0, 3).map((img) => ({
-      type: 'image_url',
-      image_url: { url: img.url },
-    })),
+    ...imageContent,
     {
       type: 'text',
       text: `用户填写的信息：
@@ -136,11 +171,12 @@ async function runRequirementParser(submission) {
     },
   ];
 
-  const { parsed, raw } = await callText({
-    messages: [
-      {
-        role: 'system',
-        content: `你是非遗工艺定制平台的需求分析 AI，专业领域：刺绣、扎染、蜡染、香云纱、苗绣等传统工艺服饰定制。
+  try {
+    const { parsed, raw } = await callText({
+      messages: [
+        {
+          role: 'system',
+          content: `你是非遗工艺定制平台的需求分析 AI，专业领域：刺绣、扎染、蜡染、香云纱、苗绣等传统工艺服饰定制。
 请仔细阅读用户提交的文字描述和参考图，输出结构化需求 JSON，字段说明如下：
 - category: 品类（高定单品 / 日常休闲 / 家居软装 等）
 - style: 风格方向，尽量具体（如"东方轮廓 / 轻礼服气质"）
@@ -153,27 +189,31 @@ async function runRequirementParser(submission) {
 - acceptsModification: boolean，是否接受调整
 
 只输出 JSON 对象，不加注释或 markdown。`,
-      },
-      { role: 'user', content: userContent },
-    ],
-  });
+        },
+        { role: 'user', content: userContent },
+      ],
+    });
 
-  return {
-    id: `structured-${randomUUID()}`,
-    submissionId: submission.id,
-    category:            parsed.category            ?? '高定单品',
-    style:               parsed.style               ?? '',
-    craftPreference:     parsed.craftPreference     ?? submission.preferredCraft,
-    materialPreference:  parsed.materialPreference  ?? '',
-    colorPreference:     parsed.colorPreference     ?? '',
-    budgetRange:         parsed.budgetRange         ?? submission.budgetRange,
-    deliveryDate:        parsed.deliveryDate        ?? submission.expectedDeliveryDate,
-    acceptableVariance:  parsed.acceptableVariance  ?? '允许 10% 以内手作差异',
-    acceptsModification: parsed.acceptsModification ?? true,
-    status: 'ready',
-    aiMode: 'aihubmix',
-    rawResponse: { raw },
-  };
+    return {
+      id: `structured-${randomUUID()}`,
+      submissionId: submission.id,
+      category:            parsed.category            ?? '高定单品',
+      style:               parsed.style               ?? '',
+      craftPreference:     parsed.craftPreference     ?? submission.preferredCraft,
+      materialPreference:  parsed.materialPreference  ?? '',
+      colorPreference:     parsed.colorPreference     ?? '',
+      budgetRange:         parsed.budgetRange         ?? submission.budgetRange,
+      deliveryDate:        parsed.deliveryDate        ?? submission.expectedDeliveryDate,
+      acceptableVariance:  parsed.acceptableVariance  ?? '允许 10% 以内手作差异',
+      acceptsModification: parsed.acceptsModification ?? true,
+      status: 'ready',
+      aiMode: 'aihubmix',
+      rawResponse: { raw },
+    };
+  } catch (err) {
+    console.error('[requirementParser] AI 失败，降级 mock：', err.message);
+    return buildStructuredRequirement(submission);
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════

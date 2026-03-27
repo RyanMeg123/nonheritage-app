@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
 
 import { BodyText, PageHeaderCard, PillButton, ScreenShell, SectionCard } from '../components/common';
 import { colors, radii, typography } from '../theme/tokens';
@@ -6,13 +6,18 @@ import type { MatchScreenData } from '../types';
 
 export function MatchScreen({
   data,
+  previewUri,
   onBack,
   onNext,
 }: {
   data: MatchScreenData;
+  previewUri?: string;
   onBack: () => void;
   onNext: () => void;
 }) {
+  const priceItem = data.logicItems.find((item) => item.label === '价格区间');
+  const timelineItem = data.logicItems.find((item) => item.label === '参考工期');
+
   return (
     <ScreenShell
       footer={
@@ -31,23 +36,35 @@ export function MatchScreen({
       />
 
       <SectionCard bordered={false} style={styles.leadCard}>
+        {previewUri ? (
+          <Image source={{ uri: previewUri }} style={styles.leadImage} resizeMode="contain" />
+        ) : null}
         <Text style={styles.leadName}>{data.leadTitle}</Text>
         <BodyText>{data.leadSummary}</BodyText>
         <BodyText style={styles.leadReason}>
           {data.reasonText}
         </BodyText>
-      </SectionCard>
 
-      <SectionCard style={styles.logicCard}>
-        <Text style={styles.sectionTitle}>{data.logicTitle}</Text>
-        <View style={styles.logicList}>
-          {data.logicItems.map((item, index) => (
-            <View key={item.id} style={[styles.logicItem, index === 1 ? styles.logicItemWarm : null]}>
-              <BodyText style={styles.logicLabel}>{item.label}</BodyText>
-              <Text style={styles.logicValue}>{item.value}</Text>
-            </View>
-          ))}
-        </View>
+        {priceItem || timelineItem ? (
+          <View style={styles.leadMetaRow}>
+            {priceItem ? (
+              <View style={[styles.leadMetaCard, styles.leadMetaCardWarm]}>
+                <BodyText style={styles.leadMetaLabel}>{priceItem.label}</BodyText>
+                <Text style={styles.leadMetaValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72}>
+                  {priceItem.value}
+                </Text>
+              </View>
+            ) : null}
+            {timelineItem ? (
+              <View style={[styles.leadMetaCard, styles.leadMetaCardCool]}>
+                <BodyText style={styles.leadMetaLabel}>{timelineItem.label}</BodyText>
+                <Text style={styles.leadMetaValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72}>
+                  {timelineItem.value}
+                </Text>
+              </View>
+            ) : null}
+          </View>
+        ) : null}
       </SectionCard>
 
       <SectionCard tone="paper" style={styles.altCard}>
@@ -76,6 +93,13 @@ const styles = StyleSheet.create({
   leadCard: {
     backgroundColor: '#F7EEE7',
   },
+  leadImage: {
+    width: '100%',
+    height: 220,
+    borderRadius: 22,
+    marginBottom: 14,
+    backgroundColor: colors.surfaceCream,
+  },
   leadName: {
     color: colors.textPrimary,
     fontFamily: typography.display,
@@ -86,35 +110,37 @@ const styles = StyleSheet.create({
   leadReason: {
     color: colors.accentBurgundy,
   },
-  logicCard: {
+  leadMetaRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 4,
+  },
+  leadMetaCard: {
+    flex: 1,
+    borderRadius: 20,
+    padding: 14,
+    gap: 4,
+  },
+  leadMetaCardWarm: {
     backgroundColor: '#FFF7F1',
+  },
+  leadMetaCardCool: {
+    backgroundColor: '#EEF8FF',
+  },
+  leadMetaLabel: {
+    fontSize: 12,
+  },
+  leadMetaValue: {
+    color: colors.textPrimary,
+    fontFamily: typography.body,
+    fontSize: 17,
+    fontWeight: '700',
   },
   sectionTitle: {
     color: colors.textPrimary,
     fontFamily: typography.body,
     fontSize: 16,
     fontWeight: '600',
-  },
-  logicList: {
-    gap: 10,
-  },
-  logicItem: {
-    borderRadius: 20,
-    backgroundColor: colors.surfaceCream,
-    padding: 14,
-    gap: 4,
-  },
-  logicItemWarm: {
-    backgroundColor: '#EFF8FF',
-  },
-  logicLabel: {
-    fontSize: 12,
-  },
-  logicValue: {
-    color: colors.textPrimary,
-    fontFamily: typography.body,
-    fontSize: 17,
-    fontWeight: '700',
   },
   altCard: {
     backgroundColor: colors.mutedPaper,

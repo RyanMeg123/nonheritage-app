@@ -14,28 +14,6 @@ function getStatusIconName(label: string): ComponentProps<typeof Feather>['name'
   return 'circle';
 }
 
-function CardCornerAccent({ tone = 'warm' }: { tone?: 'warm' | 'soft' }) {
-  const stroke = tone === 'warm' ? 'rgba(201,120,120,0.22)' : 'rgba(217,152,131,0.18)';
-  const fill = tone === 'warm' ? 'rgba(248,217,213,0.32)' : 'rgba(255,255,255,0.4)';
-
-  return (
-    <Svg width={84} height={84} viewBox="0 0 84 84">
-      <Path
-        d="M72 10C61 10 52 16 47 26C43 34 34 41 22 45"
-        stroke={stroke}
-        strokeWidth={1.5}
-        strokeLinecap="round"
-        fill="none"
-      />
-      <Path
-        d="M60 0C60 18 74 20 84 20L84 0H60Z"
-        fill={fill}
-      />
-      <Circle cx={46} cy={26} r={3} fill={stroke} />
-    </Svg>
-  );
-}
-
 function StatusRailDecoration() {
   return (
     <Svg width={42} height={168} viewBox="0 0 42 168">
@@ -92,27 +70,19 @@ export function ConversationScreen({
         showConversationIllustration
       />
 
-      <SectionCard tone="paper" style={styles.quoteCard}>
-        <View pointerEvents="none" style={styles.quoteDecoration}>
-          <CardCornerAccent tone="soft" />
-        </View>
-        <View style={styles.inlineLabelRow}>
-          <View style={styles.inlineIconWrap}>
-            <Feather name="bookmark" size={14} color={colors.accentBurgundy} />
-          </View>
-          <Text style={styles.quoteLabel}>{data.quoteLabel}</Text>
-        </View>
-        <Text style={styles.quoteText}>{data.quoteText}</Text>
-      </SectionCard>
-
       <SectionCard style={styles.statusCard}>
         <View pointerEvents="none" style={styles.statusDecoration}>
           <StatusRailDecoration />
         </View>
         <Text style={styles.sectionTitle}>{data.statusTitle}</Text>
-        <View style={styles.statusList}>
+        <View style={styles.statusPanel}>
           {data.statusItems.map((item, index) => (
-            <StatusItem key={item.id} item={item} lead={index === 0} />
+            <StatusItem
+              key={item.id}
+              item={item}
+              lead={index === 0}
+              last={index === data.statusItems.length - 1}
+            />
           ))}
         </View>
       </SectionCard>
@@ -123,35 +93,40 @@ export function ConversationScreen({
         <BodyText>{data.introNote}</BodyText>
       </SectionCard>
 
-      <View style={styles.messageList}>
-        {data.messages.map((message) => (
-          <SectionCard
-            key={message.id}
-            bordered={message.tone === 'user'}
-            tone={message.tone === 'user' ? 'cream' : 'paper'}
-            style={[styles.messageCard, message.tone === 'artisan' ? styles.messageWarm : null]}
-          >
-            <Text style={styles.messageSpeaker}>{message.speaker}</Text>
-            <BodyText style={styles.messageText}>{message.text}</BodyText>
-          </SectionCard>
-        ))}
-      </View>
+      <SectionCard style={styles.discussionCard}>
+        <Text style={styles.sectionTitle}>本轮对话摘要</Text>
+        <View style={styles.messageList}>
+          {data.messages.map((message, index) => (
+            <View
+              key={message.id}
+              style={[
+                styles.messageRow,
+                message.tone === 'artisan' ? styles.messageRowWarm : null,
+                index === data.messages.length - 1 ? styles.messageRowLast : null,
+              ]}
+            >
+              <Text style={styles.messageSpeaker}>{message.speaker}</Text>
+              <BodyText style={styles.messageText}>{message.text}</BodyText>
+            </View>
+          ))}
+        </View>
 
-      <View style={styles.actionRow}>
-        {data.actions.map((action, index) => (
-          <SectionCard key={action.id} bordered={false} style={[styles.actionCard, index === 1 ? styles.actionWarm : null]}>
-            <Text style={styles.actionTitle}>{action.title}</Text>
-            <BodyText>{action.description}</BodyText>
-          </SectionCard>
-        ))}
-      </View>
+        <View style={styles.nextStepInline}>
+          <Text style={styles.nextStepTitle}>接下来怎么推进</Text>
+          {data.actions.map((action, index) => (
+            <BodyText key={action.id} style={[styles.nextStepText, index === data.actions.length - 1 ? styles.nextStepTextLast : null]}>
+              {action.title}：{action.description}
+            </BodyText>
+          ))}
+        </View>
+      </SectionCard>
     </ScreenShell>
   );
 }
 
-function StatusItem({ item, lead }: { item: InfoPair; lead: boolean }) {
+function StatusItem({ item, lead, last }: { item: InfoPair; lead: boolean; last: boolean }) {
   return (
-    <View style={[styles.statusItem, lead ? styles.statusItemLead : null]}>
+    <View style={[styles.statusItem, lead ? styles.statusItemLead : null, last ? styles.statusItemLast : null]}>
       <View style={styles.statusItemTop}>
         <View style={[styles.statusIconWrap, lead ? styles.statusIconWrapLead : null]}>
           <Feather name={getStatusIconName(item.label)} size={15} color={colors.accentBurgundy} />
@@ -164,41 +139,6 @@ function StatusItem({ item, lead }: { item: InfoPair; lead: boolean }) {
 }
 
 const styles = StyleSheet.create({
-  quoteCard: {
-    backgroundColor: colors.mutedPaper,
-    overflow: 'hidden',
-  },
-  quoteDecoration: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-  },
-  inlineLabelRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingRight: 36,
-  },
-  inlineIconWrap: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.7)',
-  },
-  quoteLabel: {
-    color: colors.accentBurgundy,
-    fontFamily: typography.body,
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  quoteText: {
-    color: colors.textPrimary,
-    fontFamily: typography.body,
-    fontSize: 15,
-    lineHeight: 22,
-  },
   sectionTitle: {
     color: colors.textPrimary,
     fontFamily: typography.body,
@@ -214,20 +154,25 @@ const styles = StyleSheet.create({
     top: 26,
     right: 6,
   },
-  statusList: {
-    gap: 10,
-    paddingRight: 24,
+  statusPanel: {
+    marginRight: 24,
+    borderRadius: 22,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(241,223,210,0.74)',
   },
   statusItem: {
-    borderRadius: 18,
     backgroundColor: colors.surfaceCream,
     padding: 14,
     gap: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(241,223,210,0.74)',
   },
   statusItemLead: {
-    borderWidth: 1,
-    borderColor: 'rgba(201,120,120,0.14)',
     backgroundColor: '#FFFDFB',
+  },
+  statusItemLast: {
+    borderBottomWidth: 0,
   },
   statusItemTop: {
     flexDirection: 'row',
@@ -270,14 +215,29 @@ const styles = StyleSheet.create({
     lineHeight: 31,
     fontWeight: '600',
   },
-  messageList: {
-    gap: 12,
-  },
-  messageCard: {
+  discussionCard: {
     backgroundColor: '#FFF8F1',
+    gap: 14,
   },
-  messageWarm: {
+  messageList: {
+    borderRadius: 22,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(241,223,210,0.74)',
+  },
+  messageRow: {
+    backgroundColor: '#FFFDFB',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    gap: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(241,223,210,0.74)',
+  },
+  messageRowWarm: {
     backgroundColor: '#FBEFEA',
+  },
+  messageRowLast: {
+    borderBottomWidth: 0,
   },
   messageSpeaker: {
     color: colors.accentBurgundy,
@@ -289,20 +249,24 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 21,
   },
-  actionRow: {
-    gap: 10,
+  nextStepInline: {
+    gap: 6,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(241,223,210,0.74)',
+    paddingTop: 14,
   },
-  actionCard: {
-    backgroundColor: '#FFF7F1',
-  },
-  actionWarm: {
-    backgroundColor: '#FBEFEA',
-  },
-  actionTitle: {
+  nextStepTitle: {
     color: colors.textPrimary,
     fontFamily: typography.body,
     fontSize: 15,
     fontWeight: '700',
+  },
+  nextStepText: {
+    fontSize: 13,
+    lineHeight: 20,
+  },
+  nextStepTextLast: {
+    marginBottom: 0,
   },
   footerContent: {
     gap: 10,

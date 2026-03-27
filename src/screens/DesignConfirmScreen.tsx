@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
 
 import { BodyText, PageHeaderCard, PillButton, ScreenShell, SectionCard } from '../components/common';
 import { colors, radii, typography } from '../theme/tokens';
@@ -6,10 +6,12 @@ import type { DesignConfirmScreenData } from '../types';
 
 export function DesignConfirmScreen({
   data,
+  previewUri,
   onBack,
   onNext,
 }: {
   data: DesignConfirmScreenData;
+  previewUri?: string;
   onBack: () => void;
   onNext: () => void;
 }) {
@@ -31,6 +33,9 @@ export function DesignConfirmScreen({
       />
 
       <SectionCard bordered={false} style={styles.leadCard}>
+        {previewUri ? (
+          <Image source={{ uri: previewUri }} style={styles.leadImage} resizeMode="cover" />
+        ) : null}
         <Text style={styles.leadTitle}>{data.leadTitle}</Text>
         <BodyText>{data.leadSummary}</BodyText>
       </SectionCard>
@@ -79,6 +84,13 @@ export function DesignConfirmScreen({
 const styles = StyleSheet.create({
   leadCard: {
     backgroundColor: '#F7EEE7',
+  },
+  leadImage: {
+    width: '100%',
+    height: 188,
+    borderRadius: 22,
+    marginBottom: 14,
+    backgroundColor: colors.surfaceCream,
   },
   leadTitle: {
     color: colors.textPrimary,

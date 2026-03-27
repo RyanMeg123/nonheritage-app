@@ -1,17 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Image, StyleSheet, Text, View } from 'react-native';
 
 import { SPLASH_DURATION_MS, SPLASH_FRAME_TIMINGS } from '../application/splashTiming';
 import { BodyText } from '../components/common';
 import { colors, typography } from '../theme/tokens';
 
 const splashFigure = require('../../assets/illustrations/dz-hero.png');
-const loadingFrames = [
-  require('../../assets/loading/frame1.png'),
-  require('../../assets/loading/frame2.png'),
-  require('../../assets/loading/frame3.png'),
-  require('../../assets/loading/frame4.png'),
-];
 const LOADING_DOTS = ['', '.', '..', '...'];
 
 export function LaunchScreen() {
@@ -25,7 +19,7 @@ export function LaunchScreen() {
     );
 
     const finalFrameTimer = setTimeout(() => {
-      setFrameIndex(loadingFrames.length - 1);
+      setFrameIndex(LOADING_DOTS.length - 1);
     }, SPLASH_DURATION_MS - 120);
 
     return () => {
@@ -53,15 +47,8 @@ export function LaunchScreen() {
       </View>
 
       <View style={styles.loadingBlock}>
-        <View style={styles.loadingFlowerWrap}>
-          <Image
-            source={loadingFrames[frameIndex]}
-            resizeMode="contain"
-            style={[
-              styles.loadingFlower,
-              frameIndex === loadingFrames.length - 1 ? styles.loadingFlowerBloomed : null,
-            ]}
-          />
+        <View style={styles.loadingIndicatorWrap}>
+          <ActivityIndicator size="small" color={colors.accentBurgundy} />
         </View>
         <Text style={styles.loadingText}>{`正在为你准备进入方式${LOADING_DOTS[frameIndex]}`}</Text>
       </View>
@@ -139,18 +126,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 14,
   },
-  loadingFlowerWrap: {
-    width: 76,
-    height: 76,
+  loadingIndicatorWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255, 248, 242, 0.92)',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  loadingFlower: {
-    width: 76,
-    height: 76,
-  },
-  loadingFlowerBloomed: {
-    transform: [{ scale: 1.04 }],
+    borderWidth: 1,
+    borderColor: 'rgba(241,223,210,0.88)',
   },
   loadingText: {
     color: colors.textSecondary,

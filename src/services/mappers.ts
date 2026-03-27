@@ -82,18 +82,40 @@ function getOrderStatusLabel(status: string) {
   return status;
 }
 
-function isRenderableImageUrl(url: string | undefined) {
-  if (!url) {
+function normalizeImageUrl(
+  url: string | { url?: string; image_url?: string } | undefined,
+): string | undefined {
+  if (typeof url === 'string') {
+    return url;
+  }
+
+  if (url && typeof url === 'object') {
+    if (typeof url.url === 'string') {
+      return url.url;
+    }
+
+    if (typeof url.image_url === 'string') {
+      return url.image_url;
+    }
+  }
+
+  return undefined;
+}
+
+function isRenderableImageUrl(url: string | { url?: string; image_url?: string } | undefined) {
+  const normalizedUrl = normalizeImageUrl(url);
+
+  if (!normalizedUrl) {
     return false;
   }
 
   return (
-    url.startsWith('http://') ||
-    url.startsWith('https://') ||
-    url.startsWith('file://') ||
-    url.startsWith('content://') ||
-    url.startsWith('data:') ||
-    url.startsWith('asset://')
+    normalizedUrl.startsWith('http://') ||
+    normalizedUrl.startsWith('https://') ||
+    normalizedUrl.startsWith('file://') ||
+    normalizedUrl.startsWith('content://') ||
+    normalizedUrl.startsWith('data:') ||
+    normalizedUrl.startsWith('asset://')
   );
 }
 
@@ -169,7 +191,7 @@ export function mapPreviewResult(
     headerTitle: '方向预览',
     headerSubtitle: '先看成品气质和细节方向，不是最终交付承诺',
     badgeLabel: hasPreview ? '预览结果' : '预览待补全',
-    heroTitle: `${plan.recommendedCraft} · 方向预览`,
+    heroTitle: plan.recommendedCraft,
     heroNote:
       leadCaption ??
       (preview.status === 'pending_generation'
@@ -200,11 +222,23 @@ export function mapPreviewResult(
 export function getPreviewImageUri(preview: ApiPreviewResult): string | undefined {
   const previewImage = preview.previewImages.find((item) => isRenderableImageUrl(item.url));
   if (previewImage) {
-    return previewImage.url;
+    return normalizeImageUrl(previewImage.url);
   }
 
   const sourceImage = preview.sourceImages.find((item) => isRenderableImageUrl(item.url));
-  return sourceImage?.url;
+  return normalizeImageUrl(sourceImage?.url);
+}
+
+export function getPreviewImageUris(preview: ApiPreviewResult): string[] {
+  return preview.previewImages
+    .map((item) => normalizeImageUrl(item.url))
+    .filter((url): url is string => isRenderableImageUrl(url));
+}
+
+export function getSourceImageUris(preview: ApiPreviewResult): string[] {
+  return preview.sourceImages
+    .map((item) => normalizeImageUrl(item.url))
+    .filter((url): url is string => isRenderableImageUrl(url));
 }
 
 // ── ArtisanMatches ────────────────────────────────────────────────

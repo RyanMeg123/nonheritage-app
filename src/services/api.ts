@@ -8,6 +8,14 @@
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:4300';
 
+function buildNetworkErrorHelp(url: string) {
+  if (!url.includes('localhost') && !url.includes('127.0.0.1')) {
+    return '请确认当前 API 地址可访问，并检查服务是否已启动。';
+  }
+
+  return '请确认本机后端已在 4300 端口启动；如果当前是在真机调试，需要把 EXPO_PUBLIC_API_URL 改成你电脑的局域网 IP，而不是 localhost。';
+}
+
 export class ApiRequestError extends Error {
   status: number;
   code?: string;
@@ -100,7 +108,7 @@ export type ApiPreviewResult = {
   submissionId: string;
   planId: string;
   sourceImages: { url: string }[];
-  previewImages: { id: string; url: string; caption: string }[];
+  previewImages: { id: string; url: string | { url?: string; image_url?: string }; caption: string }[];
   description: string;
   status: string;
 };
@@ -188,6 +196,14 @@ export async function request<T>(
 
     return (unwrapData ? json?.data : json) as T;
   } catch (error) {
+    if (error instanceof TypeError) {
+      const help = buildNetworkErrorHelp(url);
+      const networkError = new Error(`无法连接后端：${url}。${help}`);
+      networkError.name = 'ApiNetworkError';
+      console.log('[RES ERROR]', networkError);
+      throw networkError;
+    }
+
     console.log('[RES ERROR]', error);
     throw error;
   }

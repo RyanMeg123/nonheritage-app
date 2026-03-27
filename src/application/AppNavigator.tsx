@@ -58,6 +58,8 @@ export function AppNavigator({
   serverStructuredData,
   serverPreviewData,
   serverPreviewUri,
+  serverPreviewUris,
+  serverSourceImageUris,
   serverMatchData,
   serverDesignConfirmData,
   serverOrderDetailData,
@@ -86,6 +88,8 @@ export function AppNavigator({
   serverStructuredData: StructuredResultData | null;
   serverPreviewData: PreviewScreenData | null;
   serverPreviewUri?: string;
+  serverPreviewUris: string[];
+  serverSourceImageUris: string[];
   serverMatchData: MatchScreenData | null;
   serverDesignConfirmData: DesignConfirmScreenData | null;
   serverOrderDetailData: OrderDetailScreenData | null;
@@ -161,7 +165,6 @@ export function AppNavigator({
         (serverPlanData ? (
           <CraftPlanScreen
             plan={serverPlanData}
-            debugJson={planResult ? JSON.stringify(planResult, null, 2) : undefined}
             onBack={() => goTo('publish')}
             onNext={() => goTo('structured-result')}
           />
@@ -201,6 +204,8 @@ export function AppNavigator({
           <PreviewScreen
             data={serverPreviewData}
             previewUri={serverPreviewUri}
+            previewUris={serverPreviewUris}
+            sourceImageUris={serverSourceImageUris}
             onBack={() => goTo('structured-result')}
             onNext={() => goTo('match')}
           />
@@ -220,6 +225,7 @@ export function AppNavigator({
         (serverMatchData && planResult?.matches.length ? (
           <MatchScreen
             data={serverMatchData}
+            previewUri={serverPreviewUri}
             onBack={() => goTo('preview')}
             onNext={() => goTo('design-confirm')}
           />
@@ -239,6 +245,7 @@ export function AppNavigator({
         (serverDesignConfirmData ? (
           <DesignConfirmScreen
             data={serverDesignConfirmData}
+            previewUri={serverPreviewUri}
             onBack={() => goTo('match')}
             onNext={() => goTo('conversation')}
           />

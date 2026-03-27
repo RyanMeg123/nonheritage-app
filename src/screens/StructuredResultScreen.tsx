@@ -62,25 +62,24 @@ export function StructuredResultScreen({
 
       <SectionCard tone="paper" style={styles.heroCard}>
         <View style={styles.heroSky} />
-        <View style={styles.heroGlow} />
         <View style={styles.heroMist} />
+        <SummaryBadge />
 
         <View style={styles.heroTop}>
           <View style={styles.heroCopy}>
-            <View style={styles.heroPills}>
-              <View style={styles.heroPill}>
-                <Text style={styles.heroPillText}>整理后的结论</Text>
+            <View style={styles.heroLead}>
+              <View style={styles.heroPills}>
+                <View style={styles.heroPill}>
+                  <Text style={styles.heroPillText}>整理后的结论</Text>
+                </View>
+                <View style={[styles.heroPill, styles.heroPillSoft]}>
+                  <Text style={styles.heroPillText}>{data.badgeLabel}</Text>
+                </View>
               </View>
-              <View style={[styles.heroPill, styles.heroPillSoft]}>
-                <Text style={styles.heroPillText}>{data.badgeLabel}</Text>
-              </View>
+              <Text style={styles.summaryText}>{data.summary}</Text>
             </View>
-
-            <Text style={styles.summaryText}>{data.summary}</Text>
             <Text style={styles.summaryNote}>{data.summaryNote}</Text>
           </View>
-
-          <SummaryBadge />
         </View>
 
         <View style={styles.heroDecisionCard}>
@@ -185,15 +184,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.sky,
     opacity: 0.28,
   },
-  heroGlow: {
-    position: 'absolute',
-    right: -24,
-    top: 22,
-    width: 142,
-    height: 142,
-    borderRadius: 71,
-    backgroundColor: 'rgba(255,228,163,0.28)',
-  },
   heroMist: {
     position: 'absolute',
     left: -18,
@@ -204,13 +194,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.72)',
   },
   heroTop: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'stretch',
     gap: 14,
   },
   heroCopy: {
-    flex: 1,
     gap: 12,
+  },
+  heroLead: {
+    gap: 12,
+    paddingRight: 120,
   },
   heroPills: {
     flexDirection: 'row',
@@ -246,11 +238,13 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   summaryBadgeWrap: {
+    position: 'absolute',
+    right: 26,
+    top: 30,
     width: 112,
     height: 120,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 8,
   },
   summarySheet: {
     position: 'absolute',

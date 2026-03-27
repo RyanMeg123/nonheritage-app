@@ -4,6 +4,74 @@ import { BodyText, PageHeaderCard, PillButton, ScreenShell, SectionCard } from '
 import { colors, typography } from '../theme/tokens';
 import type { OrderDetailScreenData } from '../types';
 
+function getStatusTagTone(value: string) {
+  if (value.includes('待确认')) {
+    return {
+      backgroundColor: 'rgba(216,124,124,0.14)',
+      borderColor: 'rgba(216,124,124,0.28)',
+      textColor: colors.warnText,
+    };
+  }
+
+  if (value.includes('确认') || value.includes('已支付')) {
+    return {
+      backgroundColor: 'rgba(123,167,128,0.16)',
+      borderColor: 'rgba(123,167,128,0.28)',
+      textColor: '#4B7A52',
+    };
+  }
+
+  if (value.includes('制作中')) {
+    return {
+      backgroundColor: 'rgba(123,151,188,0.16)',
+      borderColor: 'rgba(123,151,188,0.28)',
+      textColor: '#496A92',
+    };
+  }
+
+  if (value.includes('已完成')) {
+    return {
+      backgroundColor: 'rgba(143,156,120,0.16)',
+      borderColor: 'rgba(143,156,120,0.28)',
+      textColor: '#62704C',
+    };
+  }
+
+  return {
+    backgroundColor: 'rgba(194,154,101,0.14)',
+    borderColor: 'rgba(194,154,101,0.28)',
+    textColor: '#9A6E3E',
+  };
+}
+
+function getSummaryValueTone(itemId: string, value: string) {
+  if (itemId === 'summary-status') {
+    return getStatusTagTone(value);
+  }
+
+  if (itemId === 'summary-price') {
+    return {
+      backgroundColor: 'rgba(206,134,126,0.12)',
+      borderColor: 'rgba(206,134,126,0.2)',
+      textColor: '#B16860',
+    };
+  }
+
+  if (itemId === 'summary-date') {
+    return {
+      backgroundColor: 'rgba(121,151,177,0.12)',
+      borderColor: 'rgba(121,151,177,0.2)',
+      textColor: '#5D7692',
+    };
+  }
+
+  return {
+    backgroundColor: '#F7EFE8',
+    borderColor: 'rgba(241,223,210,0.74)',
+    textColor: colors.textPrimary,
+  };
+}
+
 export function OrderDetailScreen({
   data,
   onBack,
@@ -38,13 +106,33 @@ export function OrderDetailScreen({
       <SectionCard style={styles.summaryCard}>
         <Text style={styles.sectionTitle}>{data.summaryTitle}</Text>
         <BodyText style={styles.sectionNote}>{data.primaryNote}</BodyText>
-        <View style={styles.detailList}>
-          {data.summaryItems.map((item) => (
-            <View key={item.id} style={styles.detailItem}>
+        <View style={styles.summaryPanel}>
+          {data.summaryItems.map((item, index) => {
+            const tone = getSummaryValueTone(item.id, item.value);
+
+            return (
+            <View
+              key={item.id}
+              style={[
+                styles.summaryRow,
+                index === data.summaryItems.length - 1 ? styles.summaryRowLast : null,
+              ]}
+            >
               <BodyText style={styles.detailLabel}>{item.label}</BodyText>
-              <Text style={styles.detailValue}>{item.value}</Text>
+              <View
+                style={[
+                  styles.detailTag,
+                  {
+                    backgroundColor: tone.backgroundColor,
+                    borderColor: tone.borderColor,
+                  },
+                ]}
+              >
+                <Text style={[styles.detailValue, { color: tone.textColor }]}>{item.value}</Text>
+              </View>
             </View>
-          ))}
+            );
+          })}
         </View>
       </SectionCard>
 
@@ -95,23 +183,43 @@ const styles = StyleSheet.create({
   sectionNote: {
     fontSize: 12,
   },
-  detailList: {
-    gap: 10,
-  },
-  detailItem: {
+  summaryPanel: {
     borderRadius: 20,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(241,223,210,0.74)',
     backgroundColor: colors.surfaceCream,
-    padding: 14,
-    gap: 4,
+  },
+  summaryRow: {
+    paddingHorizontal: 14,
+    paddingVertical: 16,
+    gap: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(241,223,210,0.74)',
+  },
+  summaryRowLast: {
+    borderBottomWidth: 0,
   },
   detailLabel: {
     fontSize: 12,
+    flexShrink: 0,
+  },
+  detailTag: {
+    borderRadius: 999,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    marginLeft: 10,
+    maxWidth: '72%',
   },
   detailValue: {
-    color: colors.textPrimary,
     fontFamily: typography.body,
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: '700',
+    textAlign: 'right',
   },
   contextList: {
     gap: 10,

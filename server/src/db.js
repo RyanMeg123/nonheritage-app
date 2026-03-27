@@ -1,7 +1,7 @@
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 
-import { PrismaClient } from './generated/prisma/index.js';
+import { PrismaClient } from '../generated/prisma/index.js';
 
 // 单例：避免开发热重载时创建多个连接
 let _client;
