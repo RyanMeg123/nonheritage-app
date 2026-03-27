@@ -1,2 +1,15 @@
-// 订单详情业务逻辑预留位。
-// 后续 GET /v1/orders/:orderId 的实现放在这里。
+import { AppError, ErrorCode } from '../../errors.js';
+import { getOrderById } from '../../repositories/orders.js';
+
+export async function getOrderDetail(orderId) {
+  const order = await getOrderById(orderId);
+  if (!order) {
+    throw new AppError('订单不存在。', {
+      statusCode: 404,
+      code: ErrorCode.NOT_FOUND,
+      details: { orderId },
+    });
+  }
+
+  return order;
+}
