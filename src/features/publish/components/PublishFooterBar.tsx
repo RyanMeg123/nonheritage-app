@@ -25,6 +25,7 @@ export function PublishFooterBar({
   accentColor,
   accentSoft,
   tabs,
+  isLoading = false,
   onContinue,
   onTabPress,
 }: {
@@ -37,6 +38,7 @@ export function PublishFooterBar({
   accentColor: string;
   accentSoft: string;
   tabs: HomeData['bottomTabs'];
+  isLoading?: boolean;
   onContinue: () => void;
   onTabPress: (tabId: MainTabId) => void;
 }) {
@@ -135,15 +137,22 @@ export function PublishFooterBar({
 
   return (
     <View style={styles.content}>
-      <PillButton label={ctaLabel} onPress={onContinue} inverse trailing />
+      <PillButton
+        label={ctaLabel}
+        onPress={onContinue}
+        inverse
+        trailing
+        isLoading={isLoading}
+      />
 
       <Animated.View style={toggleMotionStyle}>
         <Pressable
+          disabled={isLoading}
           onPress={toggleDetails}
           style={({ pressed }) => [
             styles.detailToggle,
             { backgroundColor: accentSoft, borderColor: accentColor + '2E' },
-            pressed ? styles.togglePressed : null,
+            pressed || isLoading ? styles.togglePressed : null,
           ]}
         >
           <Text style={[styles.detailToggleText, { color: accentColor }]}>

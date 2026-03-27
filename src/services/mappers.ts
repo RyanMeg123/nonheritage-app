@@ -17,9 +17,11 @@ import type {
   CraftPlanData,
   DesignConfirmScreenData,
   MatchScreenData,
+  OrderDetailScreenData,
   PreviewScreenData,
   StructuredResultData,
 } from '../types';
+import type { OrderEntryContext, OrderRecord } from '../types/orders';
 
 const craftLabels: Record<string, string> = {
   'tie-dye': '扎染',
@@ -29,6 +31,55 @@ const craftLabels: Record<string, string> = {
 
 function getCraftLabel(value: string) {
   return craftLabels[value] ?? value;
+}
+
+function formatMoneyFromFen(value: number) {
+  const amount = Math.max(0, Math.round(value / 100));
+  return `¥${amount.toLocaleString('zh-CN')}`;
+}
+
+function formatDateLabel(value: string) {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat('zh-CN', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }).format(parsed);
+}
+
+function formatDateTimeLabel(value: string) {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat('zh-CN', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(parsed);
+}
+
+function getOrderStatusLabel(status: string) {
+  if (status === 'pending') {
+    return '待确认';
+  }
+  if (status === 'paid') {
+    return '已支付';
+  }
+  if (status === 'in_progress') {
+    return '制作中';
+  }
+  if (status === 'completed') {
+    return '已完成';
+  }
+  return status;
 }
 
 function isRenderableImageUrl(url: string | undefined) {
@@ -237,5 +288,48 @@ export function mapDesignConfirmation(
     ],
     ctaLabel: '进入沟通页',
     footerNote: '后续沟通会围绕这份确认单版本展开，不会脱离版本直接讨论。',
+  };
+}
+
+export function mapOrderDetail(
+  order: OrderRecord,
+  context?: OrderEntryContext | null,
+): OrderDetailScreenData {
+  const artisanName = context?.artisanName ?? '已选承接方';
+  const craftLabel = context?.craftLabel ?? '当前工艺方向';
+  const leadSummary =
+    context?.planSummary ??
+    '订单已经建立，当前先围绕金额、交付日期和确认版本继续往下推进。';
+
+  const contextItems = [
+    { id: 'order-id', label: '订单号', value: order.id },
+    { id: 'order-artisan', label: '承接方', value: artisanName },
+    { id: 'order-created-at', label: '创建时间', value: formatDateTimeLabel(order.createdAt) },
+  ];
+
+  if (order.notes) {
+    contextItems.push({ id: 'order-notes', label: '备注', value: order.notes });
+  }
+
+  return {
+    headerTitle: '订单详情',
+    headerSubtitle: '先把这笔订单的核心信息看清楚，再继续后续推进',
+    badgeLabel: getOrderStatusLabel(order.status),
+    leadTitle: `${craftLabel} 已进入订单阶段`,
+    leadSummary,
+    summaryTitle: '当前先确认这三项',
+    summaryItems: [
+      { id: 'summary-status', label: '当前状态', value: getOrderStatusLabel(order.status) },
+      { id: 'summary-price', label: '订单金额', value: formatMoneyFromFen(order.totalPriceFen) },
+      { id: 'summary-date', label: '约定交付日', value: formatDateLabel(order.agreedDeliveryDate) },
+    ],
+    contextTitle: '订单补充信息',
+    contextItems,
+    noteTitle: '首版说明',
+    noteText: '当前页面只先收订单核心信息，不展开消息、附件和制作阶段，避免首版范围继续变大。',
+    primaryNote: '这三项会直接影响后续是否继续推进。',
+    secondaryNote: '先确认是谁承接、什么时候建单，以及有没有补充备注。',
+    ctaLabel: '回到首页',
+    footerNote: '如果后面再接制作进度、附件和沟通记录，可以继续从这笔订单往下展开。',
   };
 }

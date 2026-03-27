@@ -3,7 +3,9 @@ import { randomUUID } from 'node:crypto';
 import { AppError, ErrorCode } from '../../errors.js';
 import {
   createOrder as createOrderRecord,
+  ensureUserForOrder,
   getDesignConfirmationForOrder,
+  resolveArtisanForOrder,
 } from '../../repositories/orders.js';
 
 // 创建订单业务逻辑预留位。
@@ -19,10 +21,13 @@ export async function createOrder(payload) {
     });
   }
 
+  await ensureUserForOrder(payload.userId);
+  const artisan = await resolveArtisanForOrder(payload.artisanId);
+
   return createOrderRecord({
     id: `order-${randomUUID()}`,
     userId: payload.userId,
-    artisanId: payload.artisanId,
+    artisanId: artisan.id,
     submissionId: designConfirmation.submissionId,
     designConfirmationId: payload.designConfirmationId,
     status: 'pending',

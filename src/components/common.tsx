@@ -2,6 +2,7 @@
 
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import {
+    ActivityIndicator,
     Animated,
     Easing,
     Image,
@@ -190,19 +191,24 @@ export function PillButton({
     onPress,
     inverse = false,
     trailing = false,
+    isLoading = false,
+    disabled = false,
 }: {
     label: string
     onPress: () => void
     inverse?: boolean
     trailing?: boolean
+    isLoading?: boolean
+    disabled?: boolean
 }) {
     return (
         <Pressable
             onPress={onPress}
+            disabled={disabled || isLoading}
             style={({ pressed }) => [
                 styles.pillButton,
                 inverse ? styles.pillButtonInverse : styles.pillButtonDefault,
-                pressed && styles.pressed,
+                (pressed || disabled || isLoading) && styles.pressed,
             ]}
         >
             <View style={styles.buttonContent}>
@@ -221,7 +227,14 @@ export function PillButton({
                         {label}
                     </Text>
                 </View>
-                {trailing ? <Text style={styles.buttonArrow}>→</Text> : null}
+                {isLoading ? (
+                    <ActivityIndicator
+                        size="small"
+                        color={inverse ? colors.textInverse : colors.accentBurgundy}
+                    />
+                ) : trailing ? (
+                    <Text style={styles.buttonArrow}>→</Text>
+                ) : null}
             </View>
         </Pressable>
     )

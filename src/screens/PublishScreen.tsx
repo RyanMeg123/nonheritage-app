@@ -26,6 +26,7 @@ export function PublishScreen({
   onBack,
   onChange,
   onContinue,
+  isLoading = false,
   onTabPress,
 }: {
   formState: PublishFormState;
@@ -33,6 +34,7 @@ export function PublishScreen({
   onBack: () => void;
   onChange: (state: PublishFormState) => void;
   onContinue: () => void;
+  isLoading?: boolean;
   onTabPress: (tabId: MainTabId) => void;
 }) {
   const [isPickingImages, setIsPickingImages] = useState(false);
@@ -254,6 +256,7 @@ export function PublishScreen({
           accentColor={currentMode.accentColor}
           accentSoft={currentMode.accentSoft}
           tabs={tabs}
+          isLoading={isLoading}
           onContinue={handleContinue}
           onTabPress={onTabPress}
         />

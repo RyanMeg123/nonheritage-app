@@ -1,4 +1,5 @@
 export type AppScreen =
+  | 'auth'
   | 'home'
   | 'publish'
   | 'chat'
@@ -263,6 +264,24 @@ export type OrderProgressScreenData = {
   actions: ActionCard[];
   noticeTitle: string;
   noticeText: string;
+  ctaLabel: string;
+  footerNote: string;
+};
+
+export type OrderDetailScreenData = {
+  headerTitle: string;
+  headerSubtitle: string;
+  badgeLabel: string;
+  leadTitle: string;
+  leadSummary: string;
+  summaryTitle: string;
+  summaryItems: InfoPair[];
+  contextTitle: string;
+  contextItems: InfoPair[];
+  noteTitle: string;
+  noteText: string;
+  primaryNote?: string;
+  secondaryNote?: string;
   ctaLabel: string;
   footerNote: string;
 };

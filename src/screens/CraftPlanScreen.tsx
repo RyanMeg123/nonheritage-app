@@ -8,10 +8,12 @@ import type { CraftPlanData, PlanReason } from '../types';
 
 export function CraftPlanScreen({
   plan,
+  debugJson,
   onBack,
   onNext,
 }: {
   plan: CraftPlanData;
+  debugJson?: string;
   onBack: () => void;
   onNext: () => void;
 }) {
@@ -51,6 +53,15 @@ export function CraftPlanScreen({
         badge={plan.badgeLabel}
         onBack={onBack}
       />
+
+      {debugJson ? (
+        <SectionCard tone="paper" style={styles.debugCard}>
+          <Text style={styles.debugTitle}>后端返回原始 JSON</Text>
+          <View style={styles.debugBlock}>
+            <Text style={styles.debugJson}>{debugJson}</Text>
+          </View>
+        </SectionCard>
+      ) : null}
 
       <SectionCard tone="paper" style={styles.heroCard}>
         <View style={styles.heroSky} />
@@ -211,6 +222,27 @@ function ReasonRow({ reason, lead }: { reason: PlanReason; lead: boolean }) {
 }
 
 const styles = StyleSheet.create({
+  debugCard: {
+    gap: 12,
+  },
+  debugTitle: {
+    color: colors.textPrimary,
+    fontFamily: typography.body,
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  debugBlock: {
+    borderRadius: radii.l,
+    backgroundColor: '#F8F1EB',
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+  },
+  debugJson: {
+    color: colors.textPrimary,
+    fontFamily: 'Courier',
+    fontSize: 12,
+    lineHeight: 18,
+  },
   heroCard: {
     overflow: 'hidden',
     backgroundColor: '#FFFDF9',

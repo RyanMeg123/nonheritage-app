@@ -1,4 +1,5 @@
 import { getDb } from '../db.js';
+import { rememberArtisanMatches } from './orders.js';
 
 export async function saveMatches(planId, entities) {
   const db = getDb();
@@ -17,7 +18,9 @@ export async function saveMatches(planId, entities) {
     })
   );
 
-  return db.$transaction(rows);
+  const savedRows = await db.$transaction(rows);
+  await rememberArtisanMatches(savedRows);
+  return savedRows;
 }
 
 export async function getMatches(planId) {

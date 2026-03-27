@@ -306,8 +306,8 @@ export function buildJourneyFlow(formState: PublishFormState, plan: CraftPlanDat
           description: '如果现在就满意，可以直接进入后续进度。',
         },
       ],
-      ctaLabel: '进入订单进度',
-      footerNote: '新的讨论结果会先沉淀进版本，再继续往后推进。',
+      ctaLabel: '创建订单并查看详情',
+      footerNote: '确认要继续后，先创建订单，再进入订单详情页查看核心信息。',
     },
     orderProgress: {
       headerTitle: '订单进度',

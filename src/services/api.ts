@@ -148,7 +148,7 @@ export type ClientErrorEnvelope = {
 
 // ── 核心 fetch 封装 ───────────────────────────────────────────────
 
-async function request<T>(
+export async function request<T>(
   path: string,
   options?: RequestInit & { unwrapData?: boolean },
 ): Promise<T> {

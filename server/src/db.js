@@ -10,6 +10,7 @@ let _testDb;
 
 function createTestDbState() {
   return {
+    users: new Map(),
     submissions: new Map(),
     structuredRequirements: new Map(),
     craftPlans: new Map(),
@@ -23,6 +24,57 @@ function createTestDb() {
   let state = createTestDbState();
 
   return {
+    user: {
+      create: async ({ data }) => {
+        const row = {
+          ...data,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        state.users.set(row.id, row);
+        return row;
+      },
+      findUnique: async ({ where }) => {
+        if (where.id) {
+          return state.users.get(where.id) ?? null;
+        }
+
+        if (where.phone) {
+          return (
+            Array.from(state.users.values()).find((user) => user.phone === where.phone) ?? null
+          );
+        }
+
+        if (where.sessionToken) {
+          return (
+            Array.from(state.users.values()).find(
+              (user) => user.sessionToken === where.sessionToken,
+            ) ?? null
+          );
+        }
+
+        return null;
+      },
+      update: async ({ where, data }) => {
+        const existing =
+          (where.id ? state.users.get(where.id) : null) ??
+          (where.phone
+            ? Array.from(state.users.values()).find((user) => user.phone === where.phone) ?? null
+            : null);
+
+        if (!existing) {
+          return null;
+        }
+
+        const row = {
+          ...existing,
+          ...data,
+          updatedAt: new Date().toISOString(),
+        };
+        state.users.set(row.id, row);
+        return row;
+      },
+    },
     submission: {
       create: async ({ data }) => {
         const row = {
