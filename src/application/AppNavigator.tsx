@@ -1,6 +1,5 @@
 import { View } from 'react-native';
 
-import { homeData } from '../data/mockData';
 import { PublishFlowStateScreen } from '../features/publish/components/PublishFlowStateScreen';
 import { ArtisanOnboardingScreen } from '../screens/ArtisanOnboardingScreen';
 import { AuthScreen } from '../screens/AuthScreen';
@@ -27,6 +26,7 @@ import type {
   StructuredResultData,
   CraftPlanData,
   JourneyFlowData,
+  HomeData,
   OnboardingScreenData,
   ProfileScreenData,
 } from '../types';
@@ -44,6 +44,7 @@ type AuthNavigatorBindings = {
 
 export function AppNavigator({
   screen,
+  homeData,
   appFrameStyle,
   formState,
   onFormChange,
@@ -74,6 +75,7 @@ export function AppNavigator({
   authBindings,
 }: {
   screen: AppScreen;
+  homeData: HomeData;
   appFrameStyle: object;
   formState: PublishFormState;
   onFormChange: (nextState: PublishFormState) => void;

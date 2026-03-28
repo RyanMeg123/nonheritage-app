@@ -33,6 +33,15 @@ export type FeaturedCase = {
   title: string;
   craft: string;
   summary: string;
+  imageUri?: string;
+  requirementText?: string;
+  budgetRange?: string;
+  expectedDeliveryDate?: string;
+  priceRange?: string;
+  timelineRange?: string;
+  sourceImageUris?: string[];
+  previewImageUris?: string[];
+  createdAt?: string;
 };
 
 export type HomeData = {

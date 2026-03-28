@@ -18,6 +18,7 @@ import {
   buildPreviewResult,
   buildStructuredRequirement,
 } from './mock-data.js';
+import { uploadBuffer } from './oss.js';
 
 // ── aihubmix 配置 ─────────────────────────────────────────────────
 const AIHUBMIX_BASE_URL = 'https://aihubmix.com';
@@ -131,6 +132,17 @@ async function callImageGen({ prompt, imageUrls = [] }) {
   }
 
   return urls;
+}
+
+async function persistGeneratedImage(url, folder = 'previews') {
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`下载生成图片失败 (${res.status})`);
+  }
+
+  const arrayBuffer = await res.arrayBuffer();
+  const mimeType = res.headers.get('content-type') || 'image/jpeg';
+  return uploadBuffer(Buffer.from(arrayBuffer), mimeType, folder);
 }
 
 // ── 环境变量控制各 adapter 是否走真实 AI ─────────────────────────
@@ -294,7 +306,11 @@ async function runPreviewRenderer(submission, plan) {
   let previewImages;
   try {
     const urls = await callImageGen({ prompt, imageUrls });
-    previewImages = urls.map((url, i) => ({
+    const persistedUrls = await Promise.all(
+      urls.map((url) => persistGeneratedImage(url, 'previews')),
+    );
+
+    previewImages = persistedUrls.map((url, i) => ({
       id: `preview-image-${i + 1}`,
       url,
       caption: i === 0 ? '方向预览图（AI 生成，仅供参考）' : `备选方向 ${i + 1}`,

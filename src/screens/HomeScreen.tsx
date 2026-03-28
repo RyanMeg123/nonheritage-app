@@ -73,14 +73,16 @@ export function HomeScreen({
                   description: item.summary,
                   indexLabel: String(index + 1).padStart(2, '0'),
                   imageSource:
-                      index === 0
-                          ? carouselLeadImage
-                          : index === 1
-                            ? carouselDrapeImage
-                            : index === 2
-                              ? carouselSilverImage
-                              : undefined,
-                  imageFit: index === 2 ? 'cover' : 'contain',
+                      item.imageUri
+                          ? { uri: item.imageUri }
+                          : index === 0
+                            ? carouselLeadImage
+                            : index === 1
+                              ? carouselDrapeImage
+                              : index === 2
+                                ? carouselSilverImage
+                                : undefined,
+                  imageFit: item.imageUri ? 'cover' : index === 2 ? 'cover' : 'contain',
                   cardStyle:
                       index === 0
                           ? styles.carouselCardLead

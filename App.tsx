@@ -1,23 +1,27 @@
 /** @format */
 
 import { StatusBar } from 'expo-status-bar'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
 
-import { publishPreset } from './src/data/mockData'
+import { homeData as defaultHomeData, publishPreset } from './src/data/mockData'
 import { AppNavigator } from './src/application/AppNavigator'
 import { useAppEntryGate } from './src/application/useAppEntryGate'
 import { useAppNavigation } from './src/application/useAppNavigation'
 import { useAppScreenData } from './src/application/useAppScreenData'
 import { useSplashGate } from './src/application/useSplashGate'
+import {
+    readStoredFeaturedCases,
+    saveGeneratedFeaturedCase,
+} from './src/features/home/storage/featuredCasesStorage'
 import { useAuthFlow } from './src/features/auth/hooks/useAuthFlow'
 import { useOrderFlow } from './src/features/orders/hooks/useOrderFlow'
 import { PublishFlowStateScreen } from './src/features/publish/components/PublishFlowStateScreen'
 import { usePublishFlow } from './src/features/publish/hooks/usePublishFlow'
 import { useFlowErrorReporter } from './src/features/shared/hooks/useFlowErrorReporter'
 import { LaunchScreen } from './src/screens/LaunchScreen'
-import type { PublishFormState } from './src/types'
+import type { FeaturedCase, HomeData, PublishFormState } from './src/types'
 
 const INITIAL_FORM: PublishFormState = {
     entryMode: 'reference-image',
@@ -36,6 +40,8 @@ export default function App() {
     const [onboardingStatus, setOnboardingStatus] = useState<
         'idle' | 'draft' | 'submitted'
     >('idle')
+    const [featuredCases, setFeaturedCases] = useState<FeaturedCase[]>([])
+    const savedSubmissionRef = useRef<string | null>(null)
 
     const appEntryGate = useAppEntryGate({
         screen,
@@ -70,6 +76,45 @@ export default function App() {
 
     const publishLoading = publishFlow.loadingStage !== 'idle'
     const orderLoading = orderFlow.loadingStage !== 'idle'
+    const mergedHomeData = buildHomeData(featuredCases)
+
+    useEffect(() => {
+        let active = true
+
+        void readStoredFeaturedCases().then((storedCases) => {
+            if (!active) {
+                return
+            }
+
+            setFeaturedCases(storedCases)
+        })
+
+        return () => {
+            active = false
+        }
+    }, [])
+
+    useEffect(() => {
+        const submitResult = publishFlow.submitResult
+        const planResult = publishFlow.planResult
+        if (!submitResult || !planResult) {
+            return
+        }
+
+        const recordId = `${submitResult.submission.id}:${planResult.plan.id}`
+        if (savedSubmissionRef.current === recordId) {
+            return
+        }
+
+        savedSubmissionRef.current = recordId
+        void saveGeneratedFeaturedCase(submitResult, planResult)
+            .then((storedCases) => {
+                setFeaturedCases(storedCases)
+            })
+            .catch(() => {
+                savedSubmissionRef.current = null
+            })
+    }, [publishFlow.planResult, publishFlow.submitResult])
 
     return (
         <SafeAreaProvider>
@@ -96,6 +141,7 @@ export default function App() {
                     <StatusBar style="dark" />
                     <AppNavigator
                         screen={screen}
+                        homeData={mergedHomeData}
                         appFrameStyle={styles.appFrame}
                         formState={publishFlow.formState}
                         onFormChange={publishFlow.handleFormChange}
@@ -137,6 +183,24 @@ export default function App() {
             )}
         </SafeAreaProvider>
     )
+}
+
+function buildHomeData(featuredCases: FeaturedCase[]): HomeData {
+    if (!featuredCases.length) {
+        return defaultHomeData
+    }
+
+    const mergedCases = [
+        ...featuredCases,
+        ...defaultHomeData.featuredCases.filter(
+            (item) => !featuredCases.some((saved) => saved.id === item.id),
+        ),
+    ].slice(0, Math.max(defaultHomeData.featuredCases.length, 6))
+
+    return {
+        ...defaultHomeData,
+        featuredCases: mergedCases,
+    }
 }
 
 const styles = StyleSheet.create({
