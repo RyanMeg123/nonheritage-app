@@ -3,6 +3,7 @@ import { handleBootstrapRoute } from './bootstrap.js';
 import { handleClientErrorsRoute } from './client-errors.js';
 import { handleCraftPlansRoute } from './craft-plans.js';
 import { handleHealthRoute } from './health.js';
+import { handleHomeRoute } from './home.js';
 import { handleOrdersRoute } from './orders.js';
 import { handleRequirementsRoute } from './requirements.js';
 import { handleUploadsRoute } from './uploads.js';
@@ -10,6 +11,7 @@ import { handleUploadsRoute } from './uploads.js';
 export const routes = [
   handleHealthRoute,
   handleBootstrapRoute,
+  handleHomeRoute,
   handleAuthRoute,
   handleUploadsRoute,
   handleRequirementsRoute,

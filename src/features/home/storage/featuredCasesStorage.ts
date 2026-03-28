@@ -8,6 +8,9 @@ import type { FeaturedCase } from '../../../types';
 
 const STORAGE_KEY = 'nonheritage.home.featuredCases';
 const MAX_STORED_CASES = 12;
+const BLOCKED_PREVIEW_URLS = new Set([
+  'https://img.ryanssuit.com/previews/c10969c7-5cbf-42c9-93c3-e7ae51f1f448.jpeg',
+]);
 
 function isRemoteHttpUrl(value: unknown): value is string {
   return typeof value === 'string' && /^https?:\/\//i.test(value);
@@ -47,12 +50,31 @@ function sanitizeStoredCase(value: unknown): FeaturedCase | null {
     return null;
   }
 
+  const imageUri = typeof candidate.imageUri === 'string' ? candidate.imageUri : undefined;
+  const sourceImageUris = Array.isArray(candidate.sourceImageUris)
+    ? candidate.sourceImageUris.filter(isRemoteHttpUrl)
+    : undefined;
+  const previewImageUris = Array.isArray(candidate.previewImageUris)
+    ? candidate.previewImageUris.filter(isRemoteHttpUrl)
+    : undefined;
+
+  if (!previewImageUris?.length) {
+    return null;
+  }
+
+  if (
+    (imageUri && BLOCKED_PREVIEW_URLS.has(imageUri)) ||
+    previewImageUris?.some((item) => BLOCKED_PREVIEW_URLS.has(item))
+  ) {
+    return null;
+  }
+
   return {
     id: candidate.id,
     title: candidate.title,
     craft: candidate.craft,
     summary: candidate.summary,
-    imageUri: typeof candidate.imageUri === 'string' ? candidate.imageUri : undefined,
+    imageUri,
     requirementText:
       typeof candidate.requirementText === 'string'
         ? candidate.requirementText
@@ -67,12 +89,8 @@ function sanitizeStoredCase(value: unknown): FeaturedCase | null {
       typeof candidate.priceRange === 'string' ? candidate.priceRange : undefined,
     timelineRange:
       typeof candidate.timelineRange === 'string' ? candidate.timelineRange : undefined,
-    sourceImageUris: Array.isArray(candidate.sourceImageUris)
-      ? candidate.sourceImageUris.filter(isRemoteHttpUrl)
-      : undefined,
-    previewImageUris: Array.isArray(candidate.previewImageUris)
-      ? candidate.previewImageUris.filter(isRemoteHttpUrl)
-      : undefined,
+    sourceImageUris,
+    previewImageUris,
     createdAt: typeof candidate.createdAt === 'string' ? candidate.createdAt : undefined,
   };
 }
@@ -80,10 +98,15 @@ function sanitizeStoredCase(value: unknown): FeaturedCase | null {
 function createFeaturedCaseRecord(
   submitResult: SubmitRequirementResponse,
   planResult: GenerateCraftPlanResponse,
-): FeaturedCase {
+): FeaturedCase | null {
   const previewImageUris = planResult.preview.previewImages
     .map((item) => normalizeImageUrl(item.url))
     .filter((item): item is string => Boolean(item));
+
+  if (!previewImageUris.length) {
+    return null;
+  }
+
   const sourceImageUris = planResult.preview.sourceImages
     .map((item) => normalizeImageUrl(item.url))
     .filter((item): item is string => Boolean(item));
@@ -148,6 +171,10 @@ export async function saveGeneratedFeaturedCase(
   planResult: GenerateCraftPlanResponse,
 ) {
   const nextRecord = createFeaturedCaseRecord(submitResult, planResult);
+  if (!nextRecord) {
+    return readStoredFeaturedCases();
+  }
+
   const current = await readStoredFeaturedCases();
   const merged = [nextRecord, ...current.filter((item) => item.id !== nextRecord.id)].slice(
     0,

@@ -11,6 +11,7 @@ import { useAppEntryGate } from './src/application/useAppEntryGate'
 import { useAppNavigation } from './src/application/useAppNavigation'
 import { useAppScreenData } from './src/application/useAppScreenData'
 import { useSplashGate } from './src/application/useSplashGate'
+import { api } from './src/services/api'
 import {
     readStoredFeaturedCases,
     saveGeneratedFeaturedCase,
@@ -81,13 +82,24 @@ export default function App() {
     useEffect(() => {
         let active = true
 
-        void readStoredFeaturedCases().then((storedCases) => {
-            if (!active) {
-                return
-            }
+        void api
+            .getFeaturedCases()
+            .then((serverCases) => {
+                if (!active) {
+                    return
+                }
 
-            setFeaturedCases(storedCases)
-        })
+                setFeaturedCases(serverCases)
+            })
+            .catch(() =>
+                readStoredFeaturedCases().then((storedCases) => {
+                    if (!active) {
+                        return
+                    }
+
+                    setFeaturedCases(storedCases)
+                }),
+            )
 
         return () => {
             active = false
@@ -186,20 +198,10 @@ export default function App() {
 }
 
 function buildHomeData(featuredCases: FeaturedCase[]): HomeData {
-    if (!featuredCases.length) {
-        return defaultHomeData
-    }
-
-    const mergedCases = [
-        ...featuredCases,
-        ...defaultHomeData.featuredCases.filter(
-            (item) => !featuredCases.some((saved) => saved.id === item.id),
-        ),
-    ].slice(0, Math.max(defaultHomeData.featuredCases.length, 6))
-
     return {
         ...defaultHomeData,
-        featuredCases: mergedCases,
+        featuredCases,
+        featuredCrafts: [],
     }
 }
 

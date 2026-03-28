@@ -14,3 +14,11 @@ export async function savePreview(data) {
     },
   });
 }
+
+export async function getRecentPreviews(limit = 12) {
+  const db = getDb();
+  return db.previewResult.findMany({
+    orderBy: { createdAt: 'desc' },
+    take: limit,
+  });
+}

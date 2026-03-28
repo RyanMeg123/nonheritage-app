@@ -1,3 +1,5 @@
+import type { FeaturedCase } from '../types';
+
 /**
  * api.ts — 后端 HTTP 客户端
  *
@@ -219,6 +221,9 @@ export const api = {
   /** 启动数据 */
   getBootstrap: () =>
     request<ApiBootstrapPayload>('/v1/bootstrap'),
+
+  /** 首页真实轮播 */
+  getFeaturedCases: () => request<FeaturedCase[]>('/v1/home/featured-cases'),
 
   /** 上传单张图片 */
   uploadImage: (file: { uri: string; name?: string; type?: string }) => {

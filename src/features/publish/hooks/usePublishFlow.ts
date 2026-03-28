@@ -33,10 +33,18 @@ function inferMimeType(uri: string) {
   if (normalized.endsWith('.webp')) {
     return 'image/webp';
   }
+  if (normalized.endsWith('.heif')) {
+    return 'image/heif';
+  }
   if (normalized.endsWith('.heic')) {
     return 'image/heic';
   }
   return 'image/jpeg';
+}
+
+function isUnsupportedAiReferenceImage(uri: string) {
+  const mimeType = inferMimeType(uri);
+  return mimeType === 'image/heic' || mimeType === 'image/heif';
 }
 
 function buildUploadName(image: UploadImagePlaceholder, index: number) {
@@ -78,6 +86,10 @@ export function usePublishFlow({
 
     const uploadedImages = [];
     for (const [index, image] of images.entries()) {
+      if (!isRemoteUrl(image.uri) && isUnsupportedAiReferenceImage(image.uri)) {
+        throw new Error('当前参考图是 iPhone 原图格式，系统暂时不支持。请先转成 JPG 或 PNG 再上传。');
+      }
+
       if (isRemoteUrl(image.uri)) {
         uploadedImages.push({ url: image.uri });
         continue;

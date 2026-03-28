@@ -121,6 +121,10 @@ function createTestDb() {
         state.previewResults.set(row.planId, row);
         return row;
       },
+      findMany: async ({ take } = {}) =>
+        Array.from(state.previewResults.values())
+          .sort((left, right) => String(right.createdAt).localeCompare(String(left.createdAt)))
+          .slice(0, take ?? state.previewResults.size),
     },
     artisanMatch: {
       create: async ({ data }) => {
