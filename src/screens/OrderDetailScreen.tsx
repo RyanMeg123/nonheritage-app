@@ -100,7 +100,7 @@ export function OrderDetailScreen({
 
       <SectionCard bordered={false} style={styles.leadCard}>
         <Text style={styles.leadTitle}>{data.leadTitle}</Text>
-        <BodyText>{data.leadSummary}</BodyText>
+        <BodyText style={styles.leadSummary}>{data.leadSummary}</BodyText>
       </SectionCard>
 
       <SectionCard style={styles.summaryCard}>
@@ -160,12 +160,17 @@ export function OrderDetailScreen({
 const styles = StyleSheet.create({
   leadCard: {
     backgroundColor: '#F7EEE7',
+    gap: 10,
+  },
+  leadSummary: {
+    fontSize: 11,
+    lineHeight: 16,
   },
   leadTitle: {
     color: colors.textPrimary,
     fontFamily: typography.display,
-    fontSize: 28,
-    lineHeight: 34,
+    fontSize: 18,
+    lineHeight: 24,
     fontWeight: '600',
   },
   summaryCard: {
@@ -177,11 +182,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     color: colors.textPrimary,
     fontFamily: typography.body,
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
   },
   sectionNote: {
-    fontSize: 12,
+    fontSize: 11,
+    lineHeight: 16,
   },
   summaryPanel: {
     borderRadius: 20,
@@ -192,7 +198,7 @@ const styles = StyleSheet.create({
   },
   summaryRow: {
     paddingHorizontal: 14,
-    paddingVertical: 16,
+    paddingVertical: 12,
     gap: 10,
     flexDirection: 'row',
     alignItems: 'center',
@@ -205,21 +211,24 @@ const styles = StyleSheet.create({
   },
   detailLabel: {
     fontSize: 12,
+    lineHeight: 18,
     flexShrink: 0,
   },
   detailTag: {
     borderRadius: 999,
     borderWidth: 1,
     paddingHorizontal: 10,
-    paddingVertical: 5,
+    paddingVertical: 3,
     marginLeft: 10,
-    maxWidth: '72%',
+    maxWidth: '68%',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   detailValue: {
     fontFamily: typography.body,
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
-    textAlign: 'right',
+    textAlign: 'center',
   },
   contextList: {
     gap: 10,
@@ -236,21 +245,21 @@ const styles = StyleSheet.create({
   contextValue: {
     color: colors.textPrimary,
     fontFamily: typography.body,
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: '700',
-    lineHeight: 22,
+    lineHeight: 19,
   },
   noticeTitle: {
     color: colors.warnText,
     fontFamily: typography.body,
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: '700',
   },
   noticeText: {
     color: colors.warnText,
     fontFamily: typography.body,
-    fontSize: 14,
-    lineHeight: 21,
+    fontSize: 12,
+    lineHeight: 18,
   },
   footerContent: {
     gap: 10,

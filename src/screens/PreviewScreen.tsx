@@ -277,15 +277,15 @@ const styles = StyleSheet.create({
   heroTitle: {
     color: colors.textPrimary,
     fontFamily: typography.display,
-    fontSize: 26,
-    lineHeight: 34,
+    fontSize: 22,
+    lineHeight: 29,
     fontWeight: '600',
   },
   heroNote: {
     color: colors.textSecondary,
     fontFamily: typography.body,
-    fontSize: 15,
-    lineHeight: 24,
+    fontSize: 14,
+    lineHeight: 21,
   },
   previewFrame: {
     height: 336,
@@ -404,11 +404,11 @@ const styles = StyleSheet.create({
   galleryTitle: {
     color: colors.textPrimary,
     fontFamily: typography.body,
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '700',
   },
   galleryCopy: {
-    fontSize: 13,
+    fontSize: 12,
   },
   galleryRow: {
     gap: 10,
@@ -461,14 +461,14 @@ const styles = StyleSheet.create({
   noticeTitle: {
     color: colors.warnText,
     fontFamily: typography.body,
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '700',
   },
   noticeText: {
     color: colors.warnText,
     fontFamily: typography.body,
-    fontSize: 14,
-    lineHeight: 22,
+    fontSize: 13,
+    lineHeight: 20,
   },
   actionShell: {
     backgroundColor: '#FFF8F2',
@@ -480,7 +480,7 @@ const styles = StyleSheet.create({
   actionHeadTitle: {
     color: colors.textPrimary,
     fontFamily: typography.body,
-    fontSize: 17,
+    fontSize: 15,
     fontWeight: '700',
   },
   actionHeadCopy: {
@@ -525,7 +525,7 @@ const styles = StyleSheet.create({
   actionTitle: {
     color: colors.textPrimary,
     fontFamily: typography.body,
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '700',
   },
   previewModalBackdrop: {
@@ -551,7 +551,7 @@ const styles = StyleSheet.create({
   previewModalTitle: {
     color: colors.textInverse,
     fontFamily: typography.body,
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
   },
   previewModalClose: {
@@ -592,7 +592,7 @@ const styles = StyleSheet.create({
   footerTitle: {
     color: colors.textPrimary,
     fontFamily: typography.body,
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
   },
   footerHint: {
@@ -629,7 +629,7 @@ const styles = StyleSheet.create({
   footerButtonTitle: {
     color: colors.textInverse,
     fontFamily: typography.body,
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
   },
   footerNote: {

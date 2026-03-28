@@ -227,15 +227,15 @@ const styles = StyleSheet.create({
   summaryText: {
     color: colors.textPrimary,
     fontFamily: typography.display,
-    fontSize: 28,
-    lineHeight: 36,
+    fontSize: 22,
+    lineHeight: 29,
     fontWeight: '600',
   },
   summaryNote: {
     color: colors.textSecondary,
     fontFamily: typography.body,
-    fontSize: 15,
-    lineHeight: 24,
+    fontSize: 14,
+    lineHeight: 21,
   },
   summaryBadgeWrap: {
     position: 'absolute',
@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
   heroDecisionTitle: {
     color: colors.textPrimary,
     fontFamily: typography.body,
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
   },
   infoCard: {
@@ -352,7 +352,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     color: colors.textPrimary,
     fontFamily: typography.body,
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
   },
   sectionCopy: {
@@ -396,7 +396,7 @@ const styles = StyleSheet.create({
   infoValue: {
     color: colors.textPrimary,
     fontFamily: typography.body,
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '700',
   },
   focusCard: {
@@ -419,7 +419,7 @@ const styles = StyleSheet.create({
   focusTitle: {
     color: colors.textPrimary,
     fontFamily: typography.body,
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
   },
   focusList: {
@@ -473,14 +473,14 @@ const styles = StyleSheet.create({
   confirmTitle: {
     color: colors.warnText,
     fontFamily: typography.body,
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '700',
   },
   confirmText: {
     color: colors.warnText,
     fontFamily: typography.body,
-    fontSize: 14,
-    lineHeight: 22,
+    fontSize: 13,
+    lineHeight: 20,
   },
   footerContent: {
     gap: 10,
@@ -507,7 +507,7 @@ const styles = StyleSheet.create({
   footerTitle: {
     color: colors.textPrimary,
     fontFamily: typography.body,
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
   },
   footerHint: {
@@ -544,7 +544,7 @@ const styles = StyleSheet.create({
   footerButtonTitle: {
     color: colors.textInverse,
     fontFamily: typography.body,
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
   },
   footerNote: {

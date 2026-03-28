@@ -103,8 +103,8 @@ const styles = StyleSheet.create({
   leadName: {
     color: colors.textPrimary,
     fontFamily: typography.display,
-    fontSize: 28,
-    lineHeight: 34,
+    fontSize: 22,
+    lineHeight: 29,
     fontWeight: '600',
   },
   leadReason: {
@@ -133,13 +133,13 @@ const styles = StyleSheet.create({
   leadMetaValue: {
     color: colors.textPrimary,
     fontFamily: typography.body,
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '700',
   },
   sectionTitle: {
     color: colors.textPrimary,
     fontFamily: typography.body,
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
   },
   altCard: {
@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
   altName: {
     color: colors.textPrimary,
     fontFamily: typography.display,
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: '600',
   },
   altRole: {
@@ -167,20 +167,20 @@ const styles = StyleSheet.create({
   altHighlight: {
     color: colors.textPrimary,
     fontFamily: typography.body,
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
   },
   noticeTitle: {
     color: colors.warnText,
     fontFamily: typography.body,
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '700',
   },
   noticeText: {
     color: colors.warnText,
     fontFamily: typography.body,
-    fontSize: 14,
-    lineHeight: 21,
+    fontSize: 13,
+    lineHeight: 20,
   },
   footerContent: {
     gap: 10,
