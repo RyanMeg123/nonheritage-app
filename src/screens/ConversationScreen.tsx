@@ -1,10 +1,9 @@
 import { Feather } from '@expo/vector-icons';
 import { type ComponentProps } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import Svg, { Circle, Path } from 'react-native-svg';
 
 import { BodyText, PageHeaderCard, ScreenShell, SectionCard } from '../components/common';
-import { colors, typography } from '../theme/tokens';
+import { colors, radii, typography } from '../theme/tokens';
 import type { ConversationScreenData, InfoPair } from '../types';
 
 function getStatusIconName(label: string): ComponentProps<typeof Feather>['name'] {
@@ -14,21 +13,28 @@ function getStatusIconName(label: string): ComponentProps<typeof Feather>['name'
   return 'circle';
 }
 
-function StatusRailDecoration() {
-  return (
-    <Svg width={42} height={168} viewBox="0 0 42 168">
-      <Path
-        d="M21 16V152"
-        stroke="rgba(217,152,131,0.18)"
-        strokeWidth={1.5}
-        strokeLinecap="round"
-        strokeDasharray="2 10"
-      />
-      <Circle cx={21} cy={28} r={5} fill="rgba(201,120,120,0.16)" />
-      <Circle cx={21} cy={84} r={4.5} fill="rgba(217,152,131,0.14)" />
-      <Circle cx={21} cy={140} r={4.5} fill="rgba(231,200,122,0.16)" />
-    </Svg>
-  );
+function getStatusMeta(index: number) {
+  if (index === 0) {
+    return {
+      step: '01',
+      stageLabel: '当前聚焦',
+      stageHint: '先把这一轮最关键的确认点收拢清楚。',
+    };
+  }
+
+  if (index === 1) {
+    return {
+      step: '02',
+      stageLabel: '对齐版本',
+      stageHint: '所有讨论都默认基于当前版本继续推进。',
+    };
+  }
+
+  return {
+    step: '03',
+    stageLabel: '下一推进',
+    stageHint: '确认无误后，再触发下一次版本更新或进入后续流程。',
+  };
 }
 
 export function ConversationScreen({
@@ -71,15 +77,22 @@ export function ConversationScreen({
       />
 
       <SectionCard style={styles.statusCard}>
-        <View pointerEvents="none" style={styles.statusDecoration}>
-          <StatusRailDecoration />
+        <View style={styles.statusHeader}>
+          <View style={styles.statusHeaderCopy}>
+            <Text style={styles.sectionTitle}>{data.statusTitle}</Text>
+            <BodyText style={styles.statusHeaderNote}>把当前关注点、对齐版本和下一动作收成一条清晰流程，避免沟通像散点记录。</BodyText>
+          </View>
+          <View style={styles.statusSummaryBadge}>
+            <Text style={styles.statusSummaryBadgeText}>{`${data.statusItems.length} 个节点`}</Text>
+          </View>
         </View>
-        <Text style={styles.sectionTitle}>{data.statusTitle}</Text>
-        <View style={styles.statusPanel}>
+
+        <View style={styles.statusFlowBoard}>
           {data.statusItems.map((item, index) => (
             <StatusItem
               key={item.id}
               item={item}
+              index={index}
               lead={index === 0}
               last={index === data.statusItems.length - 1}
             />
@@ -124,16 +137,34 @@ export function ConversationScreen({
   );
 }
 
-function StatusItem({ item, lead, last }: { item: InfoPair; lead: boolean; last: boolean }) {
+function StatusItem({ item, index, lead, last }: { item: InfoPair; index: number; lead: boolean; last: boolean }) {
+  const meta = getStatusMeta(index);
+
   return (
-    <View style={[styles.statusItem, lead ? styles.statusItemLead : null, last ? styles.statusItemLast : null]}>
-      <View style={styles.statusItemTop}>
-        <View style={[styles.statusIconWrap, lead ? styles.statusIconWrapLead : null]}>
-          <Feather name={getStatusIconName(item.label)} size={15} color={colors.accentBurgundy} />
+    <View style={[styles.statusRow, last ? styles.statusRowLast : null]}>
+      <View style={styles.statusRail}>
+        <View style={[styles.statusStepDot, lead ? styles.statusStepDotLead : null]}>
+          <Text style={[styles.statusStepText, lead ? styles.statusStepTextLead : null]}>{meta.step}</Text>
         </View>
-        <BodyText style={styles.statusLabel}>{item.label}</BodyText>
+        {last ? null : <View style={[styles.statusConnector, lead ? styles.statusConnectorLead : null]} />}
       </View>
-      <Text style={styles.statusValue}>{item.value}</Text>
+
+      <View style={[styles.statusItem, lead ? styles.statusItemLead : null]}>
+        <View style={styles.statusMetaRow}>
+          <View style={[styles.statusStageChip, lead ? styles.statusStageChipLead : null]}>
+            <Text style={[styles.statusStageChipText, lead ? styles.statusStageChipTextLead : null]}>{meta.stageLabel}</Text>
+          </View>
+          <View style={[styles.statusIconWrap, lead ? styles.statusIconWrapLead : null]}>
+            <Feather name={getStatusIconName(item.label)} size={15} color={colors.accentBurgundy} />
+          </View>
+        </View>
+
+        <View style={styles.statusCopy}>
+          <BodyText style={styles.statusLabel}>{item.label}</BodyText>
+          <Text style={[styles.statusValue, lead ? styles.statusValueLead : null]}>{item.value}</Text>
+          <BodyText style={styles.statusHint}>{meta.stageHint}</BodyText>
+        </View>
+      </View>
     </View>
   );
 }
@@ -142,62 +173,165 @@ const styles = StyleSheet.create({
   sectionTitle: {
     color: colors.textPrimary,
     fontFamily: typography.body,
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
   },
   statusCard: {
     backgroundColor: '#FFF7F1',
-    overflow: 'hidden',
+    gap: 16,
   },
-  statusDecoration: {
-    position: 'absolute',
-    top: 26,
-    right: 6,
-  },
-  statusPanel: {
-    marginRight: 24,
-    borderRadius: 22,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(241,223,210,0.74)',
-  },
-  statusItem: {
-    backgroundColor: colors.surfaceCream,
-    padding: 14,
-    gap: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(241,223,210,0.74)',
-  },
-  statusItemLead: {
-    backgroundColor: '#FFFDFB',
-  },
-  statusItemLast: {
-    borderBottomWidth: 0,
-  },
-  statusItemTop: {
+  statusHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 12,
   },
-  statusIconWrap: {
+  statusHeaderCopy: {
+    flex: 1,
+    gap: 6,
+  },
+  statusHeaderNote: {
+    paddingRight: 8,
+  },
+  statusSummaryBadge: {
+    borderRadius: radii.pill,
+    backgroundColor: 'rgba(255,255,255,0.86)',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(241,223,210,0.78)',
+  },
+  statusSummaryBadgeText: {
+    color: colors.accentBurgundy,
+    fontFamily: typography.body,
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  statusFlowBoard: {
+    borderRadius: 26,
+    backgroundColor: 'rgba(255,253,251,0.82)',
+    borderWidth: 1,
+    borderColor: 'rgba(241,223,210,0.8)',
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    gap: 2,
+  },
+  statusRow: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    gap: 12,
+    minHeight: 118,
+  },
+  statusRowLast: {
+    minHeight: 104,
+  },
+  statusRail: {
+    alignItems: 'center',
+    width: 34,
+  },
+  statusStepDot: {
     width: 28,
     height: 28,
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#FFF1E8',
+    borderWidth: 1,
+    borderColor: 'rgba(217,152,131,0.24)',
+  },
+  statusStepDotLead: {
+    backgroundColor: '#FBE3DD',
+    borderColor: 'rgba(201,120,120,0.3)',
+  },
+  statusStepText: {
+    color: colors.accentBurgundy,
+    fontFamily: typography.body,
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  statusStepTextLead: {
+    color: colors.textPrimary,
+  },
+  statusConnector: {
+    flex: 1,
+    width: 2,
+    marginTop: 8,
+    marginBottom: 6,
+    borderRadius: 999,
+    backgroundColor: 'rgba(217,152,131,0.16)',
+  },
+  statusConnectorLead: {
+    backgroundColor: 'rgba(201,120,120,0.22)',
+  },
+  statusItem: {
+    flex: 1,
+    borderRadius: 24,
+    backgroundColor: colors.surfaceCream,
+    borderWidth: 1,
+    borderColor: 'rgba(241,223,210,0.74)',
+    padding: 14,
+    gap: 12,
+  },
+  statusItemLead: {
+    backgroundColor: '#FFFDFC',
+    borderColor: 'rgba(201,120,120,0.2)',
+  },
+  statusMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
+  statusStageChip: {
+    borderRadius: radii.pill,
+    backgroundColor: '#FFF6EF',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  statusStageChipLead: {
+    backgroundColor: '#FBEFEA',
+  },
+  statusStageChipText: {
+    color: colors.accentBurgundy,
+    fontFamily: typography.body,
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  statusStageChipTextLead: {
+    color: colors.textPrimary,
+  },
+  statusIconWrap: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: '#FFF5EF',
   },
   statusIconWrapLead: {
-    backgroundColor: '#FBEFEA',
+    backgroundColor: '#FBE7E1',
+  },
+  statusCopy: {
+    gap: 4,
   },
   statusLabel: {
-    fontSize: 12,
+    fontSize: 11,
+    lineHeight: 17,
   },
   statusValue: {
     color: colors.textPrimary,
     fontFamily: typography.body,
-    fontSize: 17,
+    fontSize: 16,
+    lineHeight: 22,
     fontWeight: '700',
+  },
+  statusValueLead: {
+    fontSize: 17,
+    lineHeight: 24,
+  },
+  statusHint: {
+    fontSize: 12,
+    lineHeight: 18,
   },
   introCard: {
     backgroundColor: '#F7EEE7',
@@ -211,8 +345,8 @@ const styles = StyleSheet.create({
   introText: {
     color: colors.textPrimary,
     fontFamily: typography.display,
-    fontSize: 24,
-    lineHeight: 31,
+    fontSize: 20,
+    lineHeight: 27,
     fontWeight: '600',
   },
   discussionCard: {
@@ -246,8 +380,8 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   messageText: {
-    fontSize: 14,
-    lineHeight: 21,
+    fontSize: 13,
+    lineHeight: 20,
   },
   nextStepInline: {
     gap: 6,
@@ -258,7 +392,7 @@ const styles = StyleSheet.create({
   nextStepTitle: {
     color: colors.textPrimary,
     fontFamily: typography.body,
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '700',
   },
   nextStepText: {
@@ -300,7 +434,7 @@ const styles = StyleSheet.create({
   footerButtonLabel: {
     color: colors.textInverse,
     fontFamily: typography.body,
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
   },
   footerNote: {

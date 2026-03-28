@@ -265,15 +265,15 @@ const styles = StyleSheet.create({
   planTitle: {
     color: colors.textPrimary,
     fontFamily: typography.display,
-    fontSize: 30,
-    lineHeight: 38,
+    fontSize: 24,
+    lineHeight: 31,
     fontWeight: '600',
   },
   planSummary: {
     color: colors.textSecondary,
     fontFamily: typography.body,
-    fontSize: 15,
-    lineHeight: 24,
+    fontSize: 14,
+    lineHeight: 20,
   },
   planVisualWrap: {
     position: 'absolute',
@@ -390,7 +390,7 @@ const styles = StyleSheet.create({
   heroDecisionTitle: {
     color: colors.textPrimary,
     fontFamily: typography.body,
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
   },
   metricShell: {
@@ -403,7 +403,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     color: colors.textPrimary,
     fontFamily: typography.body,
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
   },
   sectionCopy: {
@@ -445,8 +445,8 @@ const styles = StyleSheet.create({
   resultValue: {
     color: colors.textPrimary,
     fontFamily: typography.body,
-    fontSize: 22,
-    lineHeight: 30,
+    fontSize: 19,
+    lineHeight: 26,
     fontWeight: '700',
   },
   resultNote: {
@@ -473,7 +473,7 @@ const styles = StyleSheet.create({
   reasonTitleMain: {
     color: colors.textPrimary,
     fontFamily: typography.body,
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
   },
   reasonList: {
@@ -516,7 +516,7 @@ const styles = StyleSheet.create({
   reasonTitle: {
     color: colors.textPrimary,
     fontFamily: typography.body,
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '700',
   },
   riskCard: {
@@ -543,7 +543,7 @@ const styles = StyleSheet.create({
   riskTitle: {
     color: colors.warnText,
     fontFamily: typography.body,
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '700',
   },
   riskLead: {
@@ -596,7 +596,7 @@ const styles = StyleSheet.create({
   footerTitle: {
     color: colors.textPrimary,
     fontFamily: typography.body,
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
   },
   footerHint: {
@@ -633,7 +633,7 @@ const styles = StyleSheet.create({
   footerButtonTitle: {
     color: colors.textInverse,
     fontFamily: typography.body,
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
   },
   footerNote: {

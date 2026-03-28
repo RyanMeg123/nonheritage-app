@@ -1273,13 +1273,13 @@ const styles = StyleSheet.create({
     pageHeaderBadgeText: {
         color: colors.textPrimary,
         fontFamily: typography.body,
-        fontSize: 12,
+        fontSize: 11,
         fontWeight: '600',
     },
     pageHeaderEyebrow: {
         color: colors.accentBurgundy,
         fontFamily: typography.body,
-        fontSize: 13,
+        fontSize: 12,
         fontWeight: '600',
         letterSpacing: 0.4,
     },
@@ -1292,7 +1292,7 @@ const styles = StyleSheet.create({
         left: -4,
         top: 22,
         width: '82%',
-        height: 68,
+        height: 60,
         borderRadius: 24,
         backgroundColor: 'rgba(255,255,255,0.92)',
     },
@@ -1300,8 +1300,8 @@ const styles = StyleSheet.create({
         width: '54%',
     },
     pageHeaderTitle: {
-        fontSize: 30,
-        lineHeight: 36,
+        fontSize: 24,
+        lineHeight: 30,
         maxWidth: '86%',
     },
     pageHeaderTitleWithArt: {
@@ -1314,8 +1314,8 @@ const styles = StyleSheet.create({
         maxWidth: '56%',
     },
     pageHeaderSubtitle: {
-        fontSize: 15,
-        lineHeight: 22,
+        fontSize: 14,
+        lineHeight: 20,
         maxWidth: '78%',
     },
     pageHeaderSubtitleWithArt: {
