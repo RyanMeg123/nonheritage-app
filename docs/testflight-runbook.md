@@ -1,3 +1,5 @@
+<!-- @format -->
+
 # 非遗定制上 TestFlight 实操记录
 
 这份文档不是通用教程，而是这次把 `nonheritage-app` 真正传到 TestFlight 的实际过程整理版，给同事直接照着走。
@@ -98,36 +100,36 @@ TestFlight 这条路已经打通了。
 
 ```json
 {
-  "expo": {
-    "name": "非遗定制",
-    "slug": "nonheritage-app",
-    "version": "1.0.0",
-    "icon": "./assets/app-logo.png",
-    "splash": {
-      "image": "./assets/app-logo.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.zwj.nonheritage",
-      "buildNumber": "1",
-      "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false,
-        "NSAppTransportSecurity": {
-          "NSAllowsArbitraryLoads": true
-        }
-      }
-    },
-    "plugins": [
-      [
-        "expo-image-picker",
-        {
-          "photosPermission": "允许访问相册，用于上传参考图片。"
-        }
-      ]
-    ]
-  }
+    "expo": {
+        "name": "非遗定制",
+        "slug": "nonheritage-app",
+        "version": "1.0.0",
+        "icon": "./assets/app-logo.png",
+        "splash": {
+            "image": "./assets/app-logo.png",
+            "resizeMode": "contain",
+            "backgroundColor": "#ffffff"
+        },
+        "ios": {
+            "supportsTablet": true,
+            "bundleIdentifier": "com.zwj.nonheritage",
+            "buildNumber": "1",
+            "infoPlist": {
+                "ITSAppUsesNonExemptEncryption": false,
+                "NSAppTransportSecurity": {
+                    "NSAllowsArbitraryLoads": true
+                }
+            }
+        },
+        "plugins": [
+            [
+                "expo-image-picker",
+                {
+                    "photosPermission": "允许访问相册，用于上传参考图片。"
+                }
+            ]
+        ]
+    }
 }
 ```
 
@@ -135,21 +137,21 @@ TestFlight 这条路已经打通了。
 
 ```json
 {
-  "cli": {
-    "version": ">= 18.4.0",
-    "appVersionSource": "remote"
-  },
-  "build": {
-    "preview": {
-      "distribution": "internal"
+    "cli": {
+        "version": ">= 18.4.0",
+        "appVersionSource": "remote"
     },
-    "production": {
-      "autoIncrement": true
+    "build": {
+        "preview": {
+            "distribution": "internal"
+        },
+        "production": {
+            "autoIncrement": true
+        }
+    },
+    "submit": {
+        "production": {}
     }
-  },
-  "submit": {
-    "production": {}
-  }
 }
 ```
 

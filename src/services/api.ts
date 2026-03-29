@@ -42,6 +42,22 @@ export class ApiRequestError extends Error {
   }
 }
 
+function buildInvalidResponseError(url: string, status: number, text: string, contentType: string | null) {
+  const normalizedText = text.trim();
+
+  if (normalizedText.startsWith('<')) {
+    return new Error(
+      `接口地址暂时不可用：${url}。服务器返回的是网页，不是接口数据。请检查线上域名、端口或网关配置是否已生效。`,
+    );
+  }
+
+  return new Error(
+    `接口地址返回了无法识别的内容：${url}（状态 ${status}${
+      contentType ? `，类型 ${contentType}` : ''
+    }）。请检查线上服务是否正常返回 JSON。`,
+  );
+}
+
 // ── 后端返回的原始数据类型 ────────────────────────────────────────
 
 export type ApiSubmission = {
@@ -183,20 +199,44 @@ export async function request<T>(
 
     const text = await res.text();
     console.log('[RES BODY]', text);
+    const contentType = res.headers.get('content-type');
+    const isJsonResponse = (contentType ?? '').toLowerCase().includes('application/json');
+    let json: unknown = null;
 
-    const json = text ? JSON.parse(text) : null;
+    if (text) {
+      if (isJsonResponse) {
+        try {
+          json = JSON.parse(text);
+        } catch {
+          throw buildInvalidResponseError(url, res.status, text, contentType);
+        }
+      } else {
+        throw buildInvalidResponseError(url, res.status, text, contentType);
+      }
+    }
 
     if (!res.ok) {
-      const msg = json?.error?.message ?? `请求失败 (${res.status})`;
+      const apiError = json as
+        | {
+            error?: {
+              message?: string;
+              code?: string;
+              details?: unknown;
+              traceId?: string;
+            };
+          }
+        | null;
+      const msg = apiError?.error?.message ?? `请求失败 (${res.status})`;
       throw new ApiRequestError(msg, {
         status: res.status,
-        code: json?.error?.code,
-        details: json?.error?.details,
-        traceId: json?.error?.traceId,
+        code: apiError?.error?.code,
+        details: apiError?.error?.details,
+        traceId: apiError?.error?.traceId,
       });
     }
 
-    return (unwrapData ? json?.data : json) as T;
+    const payload = json as { data?: T } | T | null;
+    return (unwrapData ? (payload as { data?: T } | null)?.data : payload) as T;
   } catch (error) {
     if (error instanceof TypeError) {
       const help = buildNetworkErrorHelp(url);
