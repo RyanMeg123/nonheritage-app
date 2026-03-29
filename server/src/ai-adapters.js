@@ -18,16 +18,52 @@ import {
   buildPreviewResult,
   buildStructuredRequirement,
 } from './mock-data.js';
+import { uploadBuffer } from './oss.js';
 
 // ── aihubmix 配置 ─────────────────────────────────────────────────
 const AIHUBMIX_BASE_URL = 'https://aihubmix.com';
 const TEXT_MODEL        = 'gpt-5.3-chat-latest';
 const IMAGE_MODEL       = 'doubao-seedream-5.0-lite';
 
+function isRemoteHttpUrl(url) {
+  return typeof url === 'string' && /^https?:\/\//i.test(url);
+}
+
+function normalizeImageOutputUrl(value) {
+  if (typeof value === 'string') {
+    return value;
+  }
+
+  if (value && typeof value === 'object') {
+    if (typeof value.url === 'string') {
+      return value.url;
+    }
+
+    if (typeof value.image_url === 'string') {
+      return value.image_url;
+    }
+  }
+
+  return null;
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function shouldRetryImageGen(error) {
+  const message = error instanceof Error ? error.message : String(error);
+  return /Timeout while downloading url|timed out|fetch failed|ECONNRESET|ETIMEDOUT/i.test(message);
+}
+
 function getApiKey() {
   const key = process.env.AIHUBMIX_API_KEY;
   if (!key) throw new Error('未设置 AIHUBMIX_API_KEY 环境变量');
   return key;
+}
+
+function getErrorMessage(error) {
+  return error instanceof Error ? error.message : String(error);
 }
 
 // ── 工具函数：调用文本模型，要求返回 JSON ─────────────────────────
@@ -45,7 +81,7 @@ async function callText({ messages, maxTokens = 1500 }) {
     },
     body: JSON.stringify({
       model: TEXT_MODEL,
-      max_tokens: maxTokens,
+      max_completion_tokens: maxTokens,
       messages,
     }),
   });
@@ -95,13 +131,81 @@ async function callImageGen({ prompt, imageUrls = [] }) {
   const json = await res.json();
   if (!res.ok) {
     const errMsg = json?.error?.message ?? `请求失败 (${res.status})`;
+    console.error('[previewRenderer] 图像接口调用失败', {
+      status: res.status,
+      imageCount: imageUrls.length,
+      promptLength: prompt.length,
+      error: errMsg,
+    });
     throw new Error(`aihubmix 图像接口错误：${errMsg}`);
   }
 
   // 兼容同步返回（output 字段）和异步轮询（status === 'succeeded'）
   const output = json.output ?? json.data?.output ?? [];
-  const urls = Array.isArray(output) ? output : [output];
-  return urls.filter(Boolean);
+  const urls = (Array.isArray(output) ? output : [output])
+    .map(normalizeImageOutputUrl)
+    .filter(Boolean);
+
+  if (urls.length === 0) {
+    console.error('[previewRenderer] 图像接口返回为空', {
+      imageCount: imageUrls.length,
+      promptLength: prompt.length,
+      responseKeys: json && typeof json === 'object' ? Object.keys(json) : [],
+    });
+    throw new Error('aihubmix 图像接口返回为空或格式不正确');
+  }
+
+  return urls;
+}
+
+async function callImageGenWithRetry({ prompt, imageUrls = [], retries = 2 }) {
+  let lastError;
+
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    try {
+      return await callImageGen({ prompt, imageUrls });
+    } catch (error) {
+      lastError = error;
+
+      if (attempt === retries || !shouldRetryImageGen(error)) {
+        throw error;
+      }
+
+      console.warn(
+        `[previewRenderer] 图像生成第 ${attempt + 1} 次失败，准备重试：${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+      await sleep(1200 * (attempt + 1));
+    }
+  }
+
+  throw lastError;
+}
+
+async function persistGeneratedImage(url, folder = 'previews') {
+  const res = await fetch(url);
+  if (!res.ok) {
+    console.error('[previewRenderer] 下载生成图片失败', {
+      status: res.status,
+      url,
+    });
+    throw new Error(`下载生成图片失败 (${res.status})`);
+  }
+
+  const arrayBuffer = await res.arrayBuffer();
+  const mimeType = res.headers.get('content-type') || 'image/jpeg';
+  try {
+    return await uploadBuffer(Buffer.from(arrayBuffer), mimeType, folder);
+  } catch (error) {
+    console.error('[previewRenderer] 上传生成图片失败', {
+      folder,
+      mimeType,
+      sourceUrl: url,
+      error: getErrorMessage(error),
+    });
+    throw error;
+  }
 }
 
 // ── 环境变量控制各 adapter 是否走真实 AI ─────────────────────────
@@ -120,12 +224,18 @@ async function runRequirementParser(submission) {
     return buildStructuredRequirement(submission);
   }
 
+  const imageContent = (submission.images ?? [])
+    .slice(0, 3)
+    .map((img) => img?.url)
+    .filter(isRemoteHttpUrl)
+    .map((url) => ({
+      type: 'image_url',
+      image_url: { url },
+    }));
+
   // 多模态 content：图片在前，文字在后
   const userContent = [
-    ...(submission.images ?? []).slice(0, 3).map((img) => ({
-      type: 'image_url',
-      image_url: { url: img.url },
-    })),
+    ...imageContent,
     {
       type: 'text',
       text: `用户填写的信息：
@@ -136,11 +246,12 @@ async function runRequirementParser(submission) {
     },
   ];
 
-  const { parsed, raw } = await callText({
-    messages: [
-      {
-        role: 'system',
-        content: `你是非遗工艺定制平台的需求分析 AI，专业领域：刺绣、扎染、蜡染、香云纱、苗绣等传统工艺服饰定制。
+  try {
+    const { parsed, raw } = await callText({
+      messages: [
+        {
+          role: 'system',
+          content: `你是非遗工艺定制平台的需求分析 AI，专业领域：刺绣、扎染、蜡染、香云纱、苗绣等传统工艺服饰定制。
 请仔细阅读用户提交的文字描述和参考图，输出结构化需求 JSON，字段说明如下：
 - category: 品类（高定单品 / 日常休闲 / 家居软装 等）
 - style: 风格方向，尽量具体（如"东方轮廓 / 轻礼服气质"）
@@ -153,27 +264,31 @@ async function runRequirementParser(submission) {
 - acceptsModification: boolean，是否接受调整
 
 只输出 JSON 对象，不加注释或 markdown。`,
-      },
-      { role: 'user', content: userContent },
-    ],
-  });
+        },
+        { role: 'user', content: userContent },
+      ],
+    });
 
-  return {
-    id: `structured-${randomUUID()}`,
-    submissionId: submission.id,
-    category:            parsed.category            ?? '高定单品',
-    style:               parsed.style               ?? '',
-    craftPreference:     parsed.craftPreference     ?? submission.preferredCraft,
-    materialPreference:  parsed.materialPreference  ?? '',
-    colorPreference:     parsed.colorPreference     ?? '',
-    budgetRange:         parsed.budgetRange         ?? submission.budgetRange,
-    deliveryDate:        parsed.deliveryDate        ?? submission.expectedDeliveryDate,
-    acceptableVariance:  parsed.acceptableVariance  ?? '允许 10% 以内手作差异',
-    acceptsModification: parsed.acceptsModification ?? true,
-    status: 'ready',
-    aiMode: 'aihubmix',
-    rawResponse: { raw },
-  };
+    return {
+      id: `structured-${randomUUID()}`,
+      submissionId: submission.id,
+      category:            parsed.category            ?? '高定单品',
+      style:               parsed.style               ?? '',
+      craftPreference:     parsed.craftPreference     ?? submission.preferredCraft,
+      materialPreference:  parsed.materialPreference  ?? '',
+      colorPreference:     parsed.colorPreference     ?? '',
+      budgetRange:         parsed.budgetRange         ?? submission.budgetRange,
+      deliveryDate:        parsed.deliveryDate        ?? submission.expectedDeliveryDate,
+      acceptableVariance:  parsed.acceptableVariance  ?? '允许 10% 以内手作差异',
+      acceptsModification: parsed.acceptsModification ?? true,
+      status: 'ready',
+      aiMode: 'aihubmix',
+      rawResponse: { raw },
+    };
+  } catch (err) {
+    console.error('[requirementParser] AI 失败，降级 mock：', err.message);
+    return buildStructuredRequirement(submission);
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -253,15 +368,41 @@ async function runPreviewRenderer(submission, plan) {
 
   let previewImages;
   try {
-    const urls = await callImageGen({ prompt, imageUrls });
-    previewImages = urls.map((url, i) => ({
+    console.log('[previewRenderer] 开始生成预览图', {
+      submissionId: submission.id,
+      planId: plan.id,
+      imageCount: imageUrls.length,
+      recommendedCraft: plan.recommendedCraft,
+    });
+    const urls = await callImageGenWithRetry({ prompt, imageUrls });
+    console.log('[previewRenderer] 图像接口返回成功', {
+      submissionId: submission.id,
+      planId: plan.id,
+      generatedCount: urls.length,
+    });
+    const persistedUrls = await Promise.all(
+      urls.map((url) => persistGeneratedImage(url, 'previews')),
+    );
+    console.log('[previewRenderer] 预览图持久化成功', {
+      submissionId: submission.id,
+      planId: plan.id,
+      persistedCount: persistedUrls.length,
+    });
+
+    previewImages = persistedUrls.map((url, i) => ({
       id: `preview-image-${i + 1}`,
       url,
       caption: i === 0 ? '方向预览图（AI 生成，仅供参考）' : `备选方向 ${i + 1}`,
     }));
   } catch (err) {
-    console.error('[previewRenderer] 图像生成失败，降级为 mock：', err.message);
-    return buildPreviewResult(submission, plan);
+    const failureMessage = getErrorMessage(err);
+    console.error('[previewRenderer] 图像生成失败，降级为 mock', {
+      submissionId: submission.id,
+      planId: plan.id,
+      imageCount: imageUrls.length,
+      error: failureMessage,
+    });
+    return buildPreviewResult(submission, plan, { failureMessage });
   }
 
   return {
@@ -343,7 +484,11 @@ async function callTextArray({ messages, maxTokens = 1500 }) {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${apiKey}`,
     },
-    body: JSON.stringify({ model: TEXT_MODEL, max_tokens: maxTokens, messages }),
+    body: JSON.stringify({
+      model: TEXT_MODEL,
+      max_completion_tokens: maxTokens,
+      messages,
+    }),
   });
 
   const json = await res.json();
@@ -401,7 +546,7 @@ async function runArtisanMatcherImpl(submission, structuredRequirement) {
 
   const matches = Array.isArray(parsed) ? parsed : [parsed];
   return matches.map((m, i) => ({
-    id:             m.id              ?? `artisan-ai-${randomUUID()}`,
+    id:             `artisan-${randomUUID()}`,
     planId:         '',
     name:           m.name            ?? `传承人 ${i + 1}`,
     craftExpertise: m.craftExpertise  ?? req.craftPreference,

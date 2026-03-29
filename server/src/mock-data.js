@@ -80,19 +80,27 @@ export function buildCraftPlan(submission, structuredRequirement) {
   };
 }
 
-export function buildPreviewResult(submission) {
+export function buildPreviewResult(submission, plan, options = {}) {
+  const failureMessage = typeof options.failureMessage === 'string' ? options.failureMessage.trim() : '';
+  const description = failureMessage
+    ? `预览生成失败：${failureMessage}`
+    : '当前阶段先返回占位结果，前端可以先把预览卡片和说明区跑通。';
+
   return {
     id: `preview-${submission.id}`,
     submissionId: submission.id,
+    planId: plan.id,
     sourceImages: submission.images,
     previewImages: [
       {
         id: `preview-image-${submission.id}`,
         url: 'mock://preview/look-1',
-        caption: '方向预览图占位，后续接真实生成能力后替换为正式地址。',
+        caption: failureMessage
+          ? '预览生成失败，当前返回占位结果。'
+          : '方向预览图占位，后续接真实生成能力后替换为正式地址。',
       },
     ],
-    description: '当前阶段先返回占位结果，前端可以先把预览卡片和说明区跑通。',
+    description,
     status: 'pending_generation',
   };
 }

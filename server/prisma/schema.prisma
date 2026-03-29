@@ -3,7 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
+  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -21,6 +21,9 @@ model User {
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
   phone       String?   @unique          // 手机号（可选，支持微信登录）
+  passwordHash String?  @map("password_hash")
+  sessionToken String?  @unique @map("session_token")
+  sessionIssuedAt DateTime? @map("session_issued_at")
   nickname    String?
   avatarUrl   String?   @map("avatar_url")
   openid      String?   @unique          // 微信 openid

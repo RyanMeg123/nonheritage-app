@@ -5,12 +5,15 @@
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
-    "test": "node --test"
+    "test": "NODE_ENV=test node --test"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "^7.5.0",
     "@prisma/client": "^7.5.0",
     "ali-oss": "^6.23.0",
     "dotenv": "^17.3.1",
-    "prisma": "^7.5.0"
+    "pg": "^8.20.0",
+    "prisma": "^7.5.0",
+    "qiniu": "^7.15.1"
   }
 }

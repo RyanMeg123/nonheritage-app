@@ -1,5 +1,5 @@
 import { startTransition, useState } from 'react';
-import { Alert, StyleSheet, View } from 'react-native';
+import { Alert, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 
 import { PageHeaderCard, ScreenShell } from '../components/common';
@@ -26,6 +26,7 @@ export function PublishScreen({
   onBack,
   onChange,
   onContinue,
+  isLoading = false,
   onTabPress,
 }: {
   formState: PublishFormState;
@@ -33,6 +34,7 @@ export function PublishScreen({
   onBack: () => void;
   onChange: (state: PublishFormState) => void;
   onContinue: () => void;
+  isLoading?: boolean;
   onTabPress: (tabId: MainTabId) => void;
 }) {
   const [isPickingImages, setIsPickingImages] = useState(false);
@@ -243,7 +245,6 @@ export function PublishScreen({
 
   return (
     <ScreenShell
-      scrollContentStyle={styles.scrollContent}
       footer={
         <PublishFooterBar
           modeLabel={currentMode.modeLabel}
@@ -255,6 +256,7 @@ export function PublishScreen({
           accentColor={currentMode.accentColor}
           accentSoft={currentMode.accentSoft}
           tabs={tabs}
+          isLoading={isLoading}
           onContinue={handleContinue}
           onTabPress={onTabPress}
         />
@@ -266,6 +268,7 @@ export function PublishScreen({
         subtitle={headerCopy.subtitle}
         badge={headerCopy.badge}
         onBack={onBack}
+        showPublishIllustration
       />
 
       <PublishModeSwitcher selectedMode={formState.entryMode} onSelect={selectMode} />
@@ -303,9 +306,3 @@ export function PublishScreen({
     </ScreenShell>
   );
 }
-
-const styles = StyleSheet.create({
-  scrollContent: {
-    paddingBottom: 248,
-  },
-});

@@ -55,6 +55,40 @@ export function HomeScreen({
     homeData: HomeData
     onTabPress: (tabId: MainTabId) => void
 }) {
+    const hasCaseSlides = homeData.featuredCases.length > 0
+    const craftSlides = homeData.featuredCrafts.length
+        ? homeData.featuredCrafts.map((craft, index) => ({
+              id: craft.id,
+              chip: '热门工艺',
+              title: craft.name,
+              description: craft.description,
+              indexLabel: String(index + 1).padStart(2, '0'),
+              imageSource:
+                  index === 0
+                      ? hotCraftImage1
+                      : index === 1
+                        ? hotCraftImage2
+                        : index === 2
+                          ? hotCraftImage3
+                          : undefined,
+              imageFit: 'cover' as const,
+              cardStyle: {
+                  backgroundColor: craftTints[index % craftTints.length],
+              },
+          }))
+        : homeData.featuredCases.map((item, index) => ({
+              id: `craft-${item.id}`,
+              chip: '热门工艺',
+              title: item.craft,
+              description: item.summary,
+              indexLabel: String(index + 1).padStart(2, '0'),
+              imageSource: item.imageUri ? { uri: item.imageUri } : undefined,
+              imageFit: 'cover' as const,
+              cardStyle: {
+                  backgroundColor: craftTints[index % craftTints.length],
+              },
+          }))
+    const hasCraftSlides = craftSlides.length > 0
     const [activeInspirationTab, setActiveInspirationTab] =
         useState<(typeof inspirationTabs)[number]['id']>('cases')
     const [activeSlideIndex, setActiveSlideIndex] = useState(0)
@@ -73,39 +107,24 @@ export function HomeScreen({
                   description: item.summary,
                   indexLabel: String(index + 1).padStart(2, '0'),
                   imageSource:
-                      index === 0
-                          ? carouselLeadImage
-                          : index === 1
-                            ? carouselDrapeImage
-                            : index === 2
-                              ? carouselSilverImage
-                              : undefined,
-                  imageFit: index === 2 ? 'cover' : 'contain',
+                      item.imageUri
+                          ? { uri: item.imageUri }
+                          : index === 0
+                            ? carouselLeadImage
+                            : index === 1
+                              ? carouselDrapeImage
+                              : index === 2
+                                ? carouselSilverImage
+                                : undefined,
+                  imageFit: item.imageUri ? 'cover' : index === 2 ? 'cover' : 'contain',
                   cardStyle:
                       index === 0
                           ? styles.carouselCardLead
                           : styles.carouselCardCase,
               }))
-            : homeData.featuredCrafts.map((craft, index) => ({
-                  id: craft.id,
-                  chip: '热门工艺',
-                  title: craft.name,
-                  description: craft.description,
-                  indexLabel: String(index + 1).padStart(2, '0'),
-                  imageSource:
-                      index === 0
-                          ? hotCraftImage1
-                          : index === 1
-                            ? hotCraftImage2
-                            : index === 2
-                              ? hotCraftImage3
-                              : undefined,
-                  imageFit: 'cover',
-                  cardStyle: {
-                      backgroundColor: craftTints[index % craftTints.length],
-                  },
-              }))
+            : craftSlides
 
+    const hasSlides = activeSlides.length > 0
     const slideWidth = carouselWidth || Math.max(screenWidth - 80, 280)
     const shouldLoop = activeSlides.length > 1
     const renderedSlides = shouldLoop
@@ -115,6 +134,16 @@ export function HomeScreen({
               activeSlides[0],
           ]
         : activeSlides
+
+    useEffect(() => {
+        if (activeInspirationTab === 'cases' && !hasCaseSlides && hasCraftSlides) {
+            setActiveInspirationTab('crafts')
+        }
+
+        if (activeInspirationTab === 'crafts' && !hasCraftSlides && hasCaseSlides) {
+            setActiveInspirationTab('cases')
+        }
+    }, [activeInspirationTab, hasCaseSlides, hasCraftSlides])
 
     useEffect(() => {
         const resetIndex = shouldLoop ? 1 : 0
@@ -228,16 +257,21 @@ export function HomeScreen({
                 </View>
                 <View style={styles.tabRow}>
                     {inspirationTabs.map((tab) => {
+                        const disabled =
+                            (tab.id === 'cases' && !hasCaseSlides) ||
+                            (tab.id === 'crafts' && !hasCraftSlides)
                         const active = tab.id === activeInspirationTab
                         return (
                             <Pressable
                                 key={tab.id}
+                                disabled={disabled}
                                 onPress={() => handleTabPress(tab.id)}
                                 style={({ pressed }) => [
                                     styles.tabChip,
                                     active
                                         ? styles.tabChipActive
                                         : styles.tabChipIdle,
+                                    disabled ? styles.tabChipDisabled : null,
                                     pressed && styles.pressed,
                                 ]}
                             >
@@ -246,6 +280,9 @@ export function HomeScreen({
                                         styles.tabChipText,
                                         active
                                             ? styles.tabChipTextActive
+                                            : null,
+                                        disabled
+                                            ? styles.tabChipTextDisabled
                                             : null,
                                     ]}
                                 >
@@ -262,83 +299,107 @@ export function HomeScreen({
                         setCarouselWidth(event.nativeEvent.layout.width)
                     }
                 >
-                    <ScrollView
-                        ref={carouselRef}
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        decelerationRate="fast"
-                        snapToInterval={slideWidth + carouselGap}
-                        snapToAlignment="start"
-                        disableIntervalMomentum
-                        onMomentumScrollEnd={handleCarouselEnd}
-                        contentContainerStyle={styles.carouselTrack}
-                    >
-                        {renderedSlides.map((slide, index) => (
-                            <View
-                                key={`${slide.id}-${index}`}
-                                style={[
-                                    styles.carouselCard,
-                                    slide.cardStyle,
-                                    {
-                                        width: slideWidth,
-                                        marginRight:
-                                            index === renderedSlides.length - 1
-                                                ? 0
-                                                : carouselGap,
-                                    },
-                                ]}
-                            >
-                                <View style={styles.carouselTop}>
-                                    <View style={styles.caseTag}>
-                                        <Text style={styles.caseCraft}>
-                                            {slide.chip}
+                    {hasSlides ? (
+                        <ScrollView
+                            ref={carouselRef}
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            decelerationRate="fast"
+                            snapToInterval={slideWidth + carouselGap}
+                            snapToAlignment="start"
+                            disableIntervalMomentum
+                            onMomentumScrollEnd={handleCarouselEnd}
+                            contentContainerStyle={styles.carouselTrack}
+                        >
+                            {renderedSlides.map((slide, index) => (
+                                <View
+                                    key={`${slide.id}-${index}`}
+                                    style={[
+                                        styles.carouselCard,
+                                        slide.cardStyle,
+                                        {
+                                            width: slideWidth,
+                                            marginRight:
+                                                index ===
+                                                renderedSlides.length - 1
+                                                    ? 0
+                                                    : carouselGap,
+                                        },
+                                    ]}
+                                >
+                                    <View style={styles.carouselTop}>
+                                        <View style={styles.caseTag}>
+                                            <Text style={styles.caseCraft}>
+                                                {slide.chip}
+                                            </Text>
+                                        </View>
+                                        <Text style={styles.caseIndex}>
+                                            {slide.indexLabel}
                                         </Text>
                                     </View>
-                                    <Text style={styles.caseIndex}>
-                                        {slide.indexLabel}
-                                    </Text>
-                                </View>
-                                {slide.imageSource ? (
-                                    <View
+                                    {slide.imageSource ? (
+                                        <View
+                                            style={[
+                                                styles.carouselImageWrap,
+                                                slide.imageFit === 'cover'
+                                                    ? styles.carouselImageWrapCraft
+                                                    : null,
+                                            ]}
+                                        >
+                                            <Image
+                                                source={slide.imageSource}
+                                                style={[
+                                                    styles.carouselImage,
+                                                    slide.imageFit === 'cover'
+                                                        ? styles.carouselImageCraft
+                                                        : null,
+                                                ]}
+                                                resizeMode={
+                                                    slide.imageFit === 'cover'
+                                                        ? 'cover'
+                                                        : 'contain'
+                                                }
+                                            />
+                                        </View>
+                                    ) : null}
+                                    <Text
                                         style={[
-                                            styles.carouselImageWrap,
-                                            slide.imageFit === 'cover'
-                                                ? styles.carouselImageWrapCraft
+                                            styles.carouselTitle,
+                                            showingCrafts
+                                                ? styles.carouselTitleCraft
                                                 : null,
                                         ]}
                                     >
-                                        <Image
-                                            source={slide.imageSource}
-                                            style={[
-                                                styles.carouselImage,
-                                                slide.imageFit === 'cover'
-                                                    ? styles.carouselImageCraft
-                                                    : null,
-                                            ]}
-                                            resizeMode={
-                                                slide.imageFit === 'cover'
-                                                    ? 'cover'
-                                                    : 'contain'
-                                            }
-                                        />
-                                    </View>
-                                ) : null}
-                                <Text
-                                    style={[
-                                        styles.carouselTitle,
-                                        showingCrafts
-                                            ? styles.carouselTitleCraft
-                                            : null,
-                                    ]}
-                                >
-                                    {slide.title}
-                                </Text>
-                                <BodyText style={styles.carouselSummary}>
-                                    {slide.description}
-                                </BodyText>
+                                        {slide.title}
+                                    </Text>
+                                    <BodyText style={styles.carouselSummary}>
+                                        {slide.description}
+                                    </BodyText>
+                                </View>
+                            ))}
+                        </ScrollView>
+                    ) : (
+                        <View
+                            style={[
+                                styles.carouselCard,
+                                styles.carouselEmptyCard,
+                                { width: slideWidth },
+                            ]}
+                        >
+                            <View style={styles.carouselTop}>
+                                <View style={styles.caseTag}>
+                                    <Text style={styles.caseCraft}>真实结果</Text>
+                                </View>
+                                <Text style={styles.caseIndex}>00</Text>
                             </View>
-                        ))}
-                    </ScrollView>
+                            <Text style={styles.carouselTitle}>
+                                还没有新的生成内容
+                            </Text>
+                            <BodyText style={styles.carouselSummary}>
+                                先提交一条真实需求，新的图片和说明会显示在这里。
+                            </BodyText>
+                        </View>
+                    )}
                 </View>
 
                 <View style={styles.carouselFooter}>
@@ -356,8 +417,15 @@ export function HomeScreen({
                         ))}
                     </View>
                     <Text style={styles.carouselCount}>
-                        {String(activeSlideIndex + 1).padStart(2, '0')} /{' '}
-                        {String(activeSlides.length).padStart(2, '0')}
+                        {hasSlides
+                            ? `${String(activeSlideIndex + 1).padStart(
+                                  2,
+                                  '0',
+                              )} / ${String(activeSlides.length).padStart(
+                                  2,
+                                  '0',
+                              )}`
+                            : '00 / 00'}
                     </Text>
                 </View>
             </SectionCard>
@@ -420,6 +488,9 @@ const styles = StyleSheet.create({
     tabChipIdle: {
         backgroundColor: 'transparent',
     },
+    tabChipDisabled: {
+        opacity: 0.42,
+    },
     tabChipActive: {
         backgroundColor: colors.accentBurgundy,
         shadowColor: colors.shadow,
@@ -436,6 +507,9 @@ const styles = StyleSheet.create({
     },
     tabChipTextActive: {
         color: colors.textInverse,
+    },
+    tabChipTextDisabled: {
+        color: colors.textSecondary,
     },
     carouselViewport: {
         marginHorizontal: -4,
@@ -457,6 +531,10 @@ const styles = StyleSheet.create({
     },
     carouselCardLead: {
         backgroundColor: '#FDF1EE',
+    },
+    carouselEmptyCard: {
+        backgroundColor: '#FFF8F1',
+        justifyContent: 'center',
     },
     carouselTop: {
         flexDirection: 'row',

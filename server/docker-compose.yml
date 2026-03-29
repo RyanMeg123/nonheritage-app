@@ -34,8 +34,13 @@ services:
         restart: unless-stopped
         ports:
             - '4300:4300'
+        volumes:
+            - ./src:/app/src
+            - ./prisma:/app/prisma
+            - ./prisma.config.ts:/app/prisma.config.ts:ro
         env_file:
             - .env
+            - .env.local
         environment:
             # 容器内连 postgres 用服务名，不用 localhost
             DATABASE_URL: postgresql://nonheritage:nonheritage_dev@postgres:5432/nonheritage?schema=public

@@ -7,6 +7,8 @@ export const ErrorCode = {
   AI_TIMEOUT: 'AI_TIMEOUT',
   AI_INVALID_FORMAT: 'AI_INVALID_FORMAT',
   NOT_FOUND: 'NOT_FOUND',
+  AUTH_INVALID: 'AUTH_INVALID',
+  CONFLICT: 'CONFLICT',
 };
 
 export class AppError extends Error {

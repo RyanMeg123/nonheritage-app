@@ -1,4 +1,5 @@
 export type AppScreen =
+  | 'auth'
   | 'home'
   | 'publish'
   | 'chat'
@@ -32,6 +33,15 @@ export type FeaturedCase = {
   title: string;
   craft: string;
   summary: string;
+  imageUri?: string;
+  requirementText?: string;
+  budgetRange?: string;
+  expectedDeliveryDate?: string;
+  priceRange?: string;
+  timelineRange?: string;
+  sourceImageUris?: string[];
+  previewImageUris?: string[];
+  createdAt?: string;
 };
 
 export type HomeData = {
@@ -52,7 +62,6 @@ export type HomeData = {
   bottomTabs: Array<{
     id: string;
     label: string;
-    glyph: string;
     active?: boolean;
   }>;
 };
@@ -268,6 +277,24 @@ export type OrderProgressScreenData = {
   footerNote: string;
 };
 
+export type OrderDetailScreenData = {
+  headerTitle: string;
+  headerSubtitle: string;
+  badgeLabel: string;
+  leadTitle: string;
+  leadSummary: string;
+  summaryTitle: string;
+  summaryItems: InfoPair[];
+  contextTitle: string;
+  contextItems: InfoPair[];
+  noteTitle: string;
+  noteText: string;
+  primaryNote?: string;
+  secondaryNote?: string;
+  ctaLabel: string;
+  footerNote: string;
+};
+
 export type JourneyFlowData = {
   structuredResult: StructuredResultData;
   preview: PreviewScreenData;
@@ -283,13 +310,40 @@ export type ProfileScreenData = {
   badgeLabel: string;
   leadTitle: string;
   leadSummary: string;
+  stageLabel: string;
+  stageValue: string;
+  nextNodeLabel: string;
+  nextNodeValue: string;
+  currentActionLabel: string;
+  currentActionTitle: string;
+  currentActionSummary: string;
+  currentActionChecklist: string[];
+  currentActionOutcome: string;
   versionTitle: string;
   versionTag: string;
   versionSummary: string;
+  versionNote: string;
+  orderTitle: string;
+  orderSummary: string;
+  orderTag: string;
+  messageTitle: string;
+  messageSummary: string;
+  messageTag: string;
+  messageActionLabel: string;
+  historyTitle: string;
+  historySummary: string;
+  historyItems: Array<{
+    id: string;
+    version: string;
+    title: string;
+    summary: string;
+    state: 'current' | 'done';
+  }>;
   quickEntries: ActionCard[];
   recentTitle: string;
   recentItems: string[];
   accountTitle: string;
+  accountSummary: string;
   accountItems: ActionCard[];
 };
 
