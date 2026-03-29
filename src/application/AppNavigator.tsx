@@ -215,7 +215,10 @@ export function AppNavigator({
           <PublishFlowStateScreen
             badge="预览为空"
             title="当前还没有可展示的预览"
-            message="这一步优先展示后端返回的预览结果。没有可用预览时，不再默认拿本地首图冒充结果。"
+            message={
+              planResult?.preview.description ||
+              '这一步优先展示后端返回的预览结果。没有可用预览时，不再默认拿本地首图冒充结果。'
+            }
             primaryLabel={submitResult ? '重新生成预览' : '重新提交需求'}
             onPrimaryPress={submitResult ? onPublishContinueReuse : onPublishContinue}
             secondaryLabel="返回上一页"

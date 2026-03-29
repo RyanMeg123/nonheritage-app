@@ -62,6 +62,10 @@ function getApiKey() {
   return key;
 }
 
+function getErrorMessage(error) {
+  return error instanceof Error ? error.message : String(error);
+}
+
 // ── 工具函数：调用文本模型，要求返回 JSON ─────────────────────────
 /**
  * messages: OpenAI 格式的 messages 数组
@@ -127,6 +131,12 @@ async function callImageGen({ prompt, imageUrls = [] }) {
   const json = await res.json();
   if (!res.ok) {
     const errMsg = json?.error?.message ?? `请求失败 (${res.status})`;
+    console.error('[previewRenderer] 图像接口调用失败', {
+      status: res.status,
+      imageCount: imageUrls.length,
+      promptLength: prompt.length,
+      error: errMsg,
+    });
     throw new Error(`aihubmix 图像接口错误：${errMsg}`);
   }
 
@@ -137,6 +147,11 @@ async function callImageGen({ prompt, imageUrls = [] }) {
     .filter(Boolean);
 
   if (urls.length === 0) {
+    console.error('[previewRenderer] 图像接口返回为空', {
+      imageCount: imageUrls.length,
+      promptLength: prompt.length,
+      responseKeys: json && typeof json === 'object' ? Object.keys(json) : [],
+    });
     throw new Error('aihubmix 图像接口返回为空或格式不正确');
   }
 
@@ -171,12 +186,26 @@ async function callImageGenWithRetry({ prompt, imageUrls = [], retries = 2 }) {
 async function persistGeneratedImage(url, folder = 'previews') {
   const res = await fetch(url);
   if (!res.ok) {
+    console.error('[previewRenderer] 下载生成图片失败', {
+      status: res.status,
+      url,
+    });
     throw new Error(`下载生成图片失败 (${res.status})`);
   }
 
   const arrayBuffer = await res.arrayBuffer();
   const mimeType = res.headers.get('content-type') || 'image/jpeg';
-  return uploadBuffer(Buffer.from(arrayBuffer), mimeType, folder);
+  try {
+    return await uploadBuffer(Buffer.from(arrayBuffer), mimeType, folder);
+  } catch (error) {
+    console.error('[previewRenderer] 上传生成图片失败', {
+      folder,
+      mimeType,
+      sourceUrl: url,
+      error: getErrorMessage(error),
+    });
+    throw error;
+  }
 }
 
 // ── 环境变量控制各 adapter 是否走真实 AI ─────────────────────────
@@ -339,10 +368,26 @@ async function runPreviewRenderer(submission, plan) {
 
   let previewImages;
   try {
+    console.log('[previewRenderer] 开始生成预览图', {
+      submissionId: submission.id,
+      planId: plan.id,
+      imageCount: imageUrls.length,
+      recommendedCraft: plan.recommendedCraft,
+    });
     const urls = await callImageGenWithRetry({ prompt, imageUrls });
+    console.log('[previewRenderer] 图像接口返回成功', {
+      submissionId: submission.id,
+      planId: plan.id,
+      generatedCount: urls.length,
+    });
     const persistedUrls = await Promise.all(
       urls.map((url) => persistGeneratedImage(url, 'previews')),
     );
+    console.log('[previewRenderer] 预览图持久化成功', {
+      submissionId: submission.id,
+      planId: plan.id,
+      persistedCount: persistedUrls.length,
+    });
 
     previewImages = persistedUrls.map((url, i) => ({
       id: `preview-image-${i + 1}`,
@@ -350,8 +395,14 @@ async function runPreviewRenderer(submission, plan) {
       caption: i === 0 ? '方向预览图（AI 生成，仅供参考）' : `备选方向 ${i + 1}`,
     }));
   } catch (err) {
-    console.error('[previewRenderer] 图像生成失败，降级为 mock：', err.message);
-    return buildPreviewResult(submission, plan);
+    const failureMessage = getErrorMessage(err);
+    console.error('[previewRenderer] 图像生成失败，降级为 mock', {
+      submissionId: submission.id,
+      planId: plan.id,
+      imageCount: imageUrls.length,
+      error: failureMessage,
+    });
+    return buildPreviewResult(submission, plan, { failureMessage });
   }
 
   return {
