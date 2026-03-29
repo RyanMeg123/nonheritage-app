@@ -225,8 +225,7 @@ export function getPreviewImageUri(preview: ApiPreviewResult): string | undefine
     return normalizeImageUrl(previewImage.url);
   }
 
-  const sourceImage = preview.sourceImages.find((item) => isRenderableImageUrl(item.url));
-  return normalizeImageUrl(sourceImage?.url);
+  return undefined;
 }
 
 export function getPreviewImageUris(preview: ApiPreviewResult): string[] {

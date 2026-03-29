@@ -47,6 +47,15 @@ function normalizeImageOutputUrl(value) {
   return null;
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function shouldRetryImageGen(error) {
+  const message = error instanceof Error ? error.message : String(error);
+  return /Timeout while downloading url|timed out|fetch failed|ECONNRESET|ETIMEDOUT/i.test(message);
+}
+
 function getApiKey() {
   const key = process.env.AIHUBMIX_API_KEY;
   if (!key) throw new Error('未设置 AIHUBMIX_API_KEY 环境变量');
@@ -132,6 +141,31 @@ async function callImageGen({ prompt, imageUrls = [] }) {
   }
 
   return urls;
+}
+
+async function callImageGenWithRetry({ prompt, imageUrls = [], retries = 2 }) {
+  let lastError;
+
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    try {
+      return await callImageGen({ prompt, imageUrls });
+    } catch (error) {
+      lastError = error;
+
+      if (attempt === retries || !shouldRetryImageGen(error)) {
+        throw error;
+      }
+
+      console.warn(
+        `[previewRenderer] 图像生成第 ${attempt + 1} 次失败，准备重试：${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+      await sleep(1200 * (attempt + 1));
+    }
+  }
+
+  throw lastError;
 }
 
 async function persistGeneratedImage(url, folder = 'previews') {
@@ -305,7 +339,7 @@ async function runPreviewRenderer(submission, plan) {
 
   let previewImages;
   try {
-    const urls = await callImageGen({ prompt, imageUrls });
+    const urls = await callImageGenWithRetry({ prompt, imageUrls });
     const persistedUrls = await Promise.all(
       urls.map((url) => persistGeneratedImage(url, 'previews')),
     );
