@@ -342,12 +342,38 @@ EXPO_PUBLIC_API_URL=http://api.ryanssuit.com:4300
 
 ### 1. 进程守护
 
-现在后端是用 `nohup` 起的，能跑，但不够稳。
+现在后端如果还是用 `nohup` 起，只适合临时调试，不适合长期跑。
 
-建议后续改成：
+建议改成 `pm2`。项目里已经可以直接使用：
 
-- `pm2`
-- 或 systemd 服务
+```bash
+cd /root/nonheritage-app/server
+pm2 start ecosystem.config.cjs
+pm2 save
+pm2 startup
+```
+
+如果后面改了 `.env` 或拉了新代码，重启用：
+
+```bash
+cd /root/nonheritage-app/server
+pm2 restart nonheritage-server --update-env
+```
+
+查看状态和日志：
+
+```bash
+pm2 status
+pm2 logs nonheritage-server --lines 100
+```
+
+注意不要再用：
+
+```bash
+pm2 restart all
+```
+
+因为服务器上可能还有别的项目，会一起被重启。
 
 ### 2. 密钥安全
 
