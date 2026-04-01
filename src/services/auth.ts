@@ -35,4 +35,12 @@ export const authApi = {
       method: 'POST',
       body: JSON.stringify(payload),
     }).then(mapAuthSession),
+
+  deleteAccount: (token: string) =>
+    request<{ deleted: boolean; deletedUserId: string }>('/v1/auth/account', {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }),
 };

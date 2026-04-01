@@ -1,3 +1,4 @@
+import { deleteAccount } from '../../services/auth/delete-account.js';
 import { login } from '../../services/auth/login.js';
 import { checkPhone } from '../../services/auth/phone-check.js';
 import { registerLogin } from '../../services/auth/register-login.js';
@@ -38,6 +39,18 @@ export async function handleAuthRoute({ req, traceId, url }) {
         data: await login({
           phone: body.phone.trim(),
           password: body.password,
+        }),
+        traceId,
+      },
+      200,
+    );
+  }
+
+  if (req.method === 'DELETE' && url.pathname === '/v1/auth/account') {
+    return json(
+      {
+        data: await deleteAccount({
+          authorizationHeader: req.headers.authorization,
         }),
         traceId,
       },

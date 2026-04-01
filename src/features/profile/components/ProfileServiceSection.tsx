@@ -9,11 +9,15 @@ export function ProfileServiceSection({
   summary,
   items,
   onOpenOnboarding,
+  onDeleteAccount,
+  deleteAccountDisabled,
 }: {
   title: string;
   summary: string;
   items: ActionCard[];
   onOpenOnboarding: () => void;
+  onDeleteAccount: () => void;
+  deleteAccountDisabled: boolean;
 }) {
   return (
     <SectionCard bordered={false} style={styles.card}>
@@ -38,6 +42,20 @@ export function ProfileServiceSection({
           </Pressable>
         ))}
       </View>
+
+      <Pressable
+        onPress={deleteAccountDisabled ? undefined : onDeleteAccount}
+        style={({ pressed }) => [
+          styles.deleteCard,
+          deleteAccountDisabled && styles.deleteCardDisabled,
+          pressed && !deleteAccountDisabled ? styles.pressed : null,
+        ]}
+      >
+        <Text style={styles.deleteTitle}>{deleteAccountDisabled ? '正在删除账号' : '删除账号'}</Text>
+        <BodyText style={styles.deleteText}>
+          删除后会清空当前账号和相关记录。这个操作不可恢复。
+        </BodyText>
+      </Pressable>
     </SectionCard>
   );
 }
@@ -84,5 +102,26 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.92,
+  },
+  deleteCard: {
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#F2C8C2',
+    backgroundColor: '#FFF4F2',
+    padding: 14,
+    gap: 4,
+  },
+  deleteCardDisabled: {
+    opacity: 0.7,
+  },
+  deleteTitle: {
+    color: '#A13D31',
+    fontFamily: typography.body,
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  deleteText: {
+    fontSize: 12,
+    color: '#80554D',
   },
 });

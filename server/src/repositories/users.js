@@ -26,6 +26,15 @@ export async function findUserByPhone(phone) {
   return toUserRecord(user);
 }
 
+export async function findUserBySessionToken(sessionToken) {
+  const db = getDb();
+  const user = await db.user.findUnique({
+    where: { sessionToken },
+  });
+
+  return toUserRecord(user);
+}
+
 export async function createUserWithPhone({
   phone,
   nickname,
@@ -58,4 +67,76 @@ export async function updateUserSession(userId, { sessionToken, sessionIssuedAt 
   });
 
   return toUserRecord(user);
+}
+
+async function removeUserGraph(tx, userId) {
+  const submissions = await tx.submission.findMany({
+    where: { userId },
+  });
+  const submissionIds = submissions.map((row) => row.id);
+
+  const plans = submissionIds.length
+    ? await tx.craftPlan.findMany({
+        where: { submissionId: { in: submissionIds } },
+      })
+    : [];
+  const planIds = plans.map((row) => row.id);
+
+  const orders = await tx.order.findMany({
+    where: { userId },
+  });
+  const orderIds = orders.map((row) => row.id);
+
+  if (orderIds.length) {
+    await tx.orderStage.deleteMany({
+      where: { orderId: { in: orderIds } },
+    });
+    await tx.orderMessage.deleteMany({
+      where: { orderId: { in: orderIds } },
+    });
+    await tx.order.deleteMany({
+      where: { id: { in: orderIds } },
+    });
+  }
+
+  if (planIds.length) {
+    await tx.artisanMatch.deleteMany({
+      where: { planId: { in: planIds } },
+    });
+    await tx.previewResult.deleteMany({
+      where: { planId: { in: planIds } },
+    });
+    await tx.designConfirmation.deleteMany({
+      where: { planId: { in: planIds } },
+    });
+    await tx.craftPlan.deleteMany({
+      where: { id: { in: planIds } },
+    });
+  }
+
+  if (submissionIds.length) {
+    await tx.structuredRequirement.deleteMany({
+      where: { submissionId: { in: submissionIds } },
+    });
+    await tx.submission.deleteMany({
+      where: { id: { in: submissionIds } },
+    });
+  }
+
+  await tx.user.delete({
+    where: { id: userId },
+  });
+}
+
+export async function deleteUserAccount(userId) {
+  const db = getDb();
+
+  if (process.env.NODE_ENV === 'test') {
+    await removeUserGraph(db, userId);
+    return;
+  }
+
+  await db.$transaction(async (tx) => {
+    await removeUserGraph(tx, userId);
+  });
 }

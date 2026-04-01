@@ -40,6 +40,8 @@ type AuthNavigatorBindings = {
   onRegisterLogin: (payload: { phone: string; password: string }) => Promise<unknown>;
   onLogin: (payload: { phone: string; password: string }) => Promise<unknown>;
   onAuthSuccess: () => void;
+  onDeleteAccount: () => Promise<void>;
+  onReturnToAuth: () => void;
 };
 
 export function AppNavigator({
@@ -147,6 +149,9 @@ export function AppNavigator({
           onTabPress={goToTab}
           onOpenProgress={() => onOpenOrderProgress('profile')}
           onOpenOnboarding={() => goTo('artisan-onboarding')}
+          isDeletingAccount={authBindings.authLoadingStage === 'deleting-account'}
+          onDeleteAccount={authBindings.onDeleteAccount}
+          onReturnToAuth={authBindings.onReturnToAuth}
         />
       )}
 

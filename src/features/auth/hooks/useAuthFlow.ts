@@ -25,6 +25,10 @@ export function useAuthFlow({
     goTo(authBackScreen);
   }, [authBackScreen, goTo]);
 
+  const handleDeleteAccount = useCallback(async () => {
+    await authSession.deleteAccount();
+  }, [authSession]);
+
   const navigatorProps = useMemo(
     () => ({
       authLoadingStage: authSession.loadingStage,
@@ -32,12 +36,17 @@ export function useAuthFlow({
       onRegisterLogin: authSession.registerLogin,
       onLogin: authSession.login,
       onAuthSuccess: handleAuthSuccess,
+      onDeleteAccount: handleDeleteAccount,
+      onReturnToAuth: () => goTo('auth'),
     }),
     [
       authSession.checkPhone,
+      authSession.deleteAccount,
       authSession.loadingStage,
       authSession.login,
       authSession.registerLogin,
+      goTo,
+      handleDeleteAccount,
       handleAuthSuccess,
     ],
   );

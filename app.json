@@ -1,54 +1,52 @@
 {
-  "expo": {
-    "name": "非遗定制",
-    "slug": "nonheritage-app",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/app-logo.png",
-    "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/app-logo.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.zwj.nonheritage",
-      "buildNumber": "1",
-      "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false,
-        "NSAppTransportSecurity": {
-          "NSAllowsArbitraryLoads": true
+    "expo": {
+        "name": "非遗定制",
+        "slug": "nonheritage-app",
+        "version": "1.0.0",
+        "orientation": "portrait",
+        "icon": "./assets/app-logo.png",
+        "userInterfaceStyle": "light",
+        "splash": {
+            "image": "./assets/app-logo.png",
+            "resizeMode": "contain",
+            "backgroundColor": "#ffffff"
+        },
+        "ios": {
+            "supportsTablet": false,
+            "bundleIdentifier": "com.zwj.nonheritage",
+            "buildNumber": "1",
+            "infoPlist": {
+                "ITSAppUsesNonExemptEncryption": false,
+                "NSAppTransportSecurity": {
+                    "NSAllowsArbitraryLoads": true
+                }
+            }
+        },
+        "plugins": [
+            [
+                "expo-image-picker",
+                {
+                    "photosPermission": "允许访问相册，用于上传参考图片。"
+                }
+            ]
+        ],
+        "android": {
+            "adaptiveIcon": {
+                "backgroundColor": "#E6F4FE",
+                "foregroundImage": "./assets/android-icon-foreground.png",
+                "backgroundImage": "./assets/android-icon-background.png",
+                "monochromeImage": "./assets/android-icon-monochrome.png"
+            },
+            "predictiveBackGestureEnabled": false,
+            "permissions": ["android.permission.RECORD_AUDIO"]
+        },
+        "web": {
+            "favicon": "./assets/favicon.png"
+        },
+        "extra": {
+            "eas": {
+                "projectId": "9e5cc329-5a60-49c3-863b-63aafe00a670"
+            }
         }
-      }
-    },
-    "plugins": [
-      [
-        "expo-image-picker",
-        {
-          "photosPermission": "允许访问相册，用于上传参考图片。"
-        }
-      ]
-    ],
-    "android": {
-      "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
-      },
-      "predictiveBackGestureEnabled": false,
-      "permissions": [
-        "android.permission.RECORD_AUDIO"
-      ]
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    },
-    "extra": {
-      "eas": {
-        "projectId": "9e5cc329-5a60-49c3-863b-63aafe00a670"
-      }
     }
-  }
 }

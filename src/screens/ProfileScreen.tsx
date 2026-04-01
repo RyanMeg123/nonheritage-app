@@ -1,3 +1,5 @@
+import { Alert } from 'react-native';
+
 import { MainTabBar, PageHeaderCard, ScreenShell } from '../components/common';
 import { ProfileOverviewCard } from '../features/profile/components/ProfileOverviewCard';
 import { ProfileProjectSummaryCard } from '../features/profile/components/ProfileProjectSummaryCard';
@@ -13,13 +15,49 @@ export function ProfileScreen({
   onTabPress,
   onOpenProgress,
   onOpenOnboarding,
+  isDeletingAccount,
+  onDeleteAccount,
+  onReturnToAuth,
 }: {
   data: ProfileScreenData;
   tabs: HomeData['bottomTabs'];
   onTabPress: (tabId: MainTabId) => void;
   onOpenProgress: () => void;
   onOpenOnboarding: () => void;
+  isDeletingAccount: boolean;
+  onDeleteAccount: () => Promise<void>;
+  onReturnToAuth: () => void;
 }) {
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      '确认删除账号？',
+      '删除后，当前账号和相关记录会被清空，完成后需要重新注册才能继续使用。',
+      [
+        { text: '取消', style: 'cancel' },
+        {
+          text: isDeletingAccount ? '正在删除' : '确认删除',
+          style: 'destructive',
+          onPress: () => {
+            void (async () => {
+              try {
+                await onDeleteAccount();
+                Alert.alert('账号已删除', '当前账号和相关记录已经清空。', [
+                  {
+                    text: '返回登录',
+                    onPress: onReturnToAuth,
+                  },
+                ]);
+              } catch (error) {
+                const message = error instanceof Error ? error.message : '当前暂时无法删除账号，请稍后重试。';
+                Alert.alert('删除失败', message);
+              }
+            })();
+          },
+        },
+      ],
+    );
+  };
+
   return (
     <ScreenShell footer={<MainTabBar tabs={tabs} activeTab="mine" onTabPress={onTabPress} />}>
       <PageHeaderCard
@@ -80,6 +118,8 @@ export function ProfileScreen({
         summary={data.accountSummary}
         items={data.accountItems}
         onOpenOnboarding={onOpenOnboarding}
+        onDeleteAccount={handleDeleteAccount}
+        deleteAccountDisabled={isDeletingAccount}
       />
     </ScreenShell>
   );

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { authApi } from '../../../services/auth';
+import { ApiRequestError } from '../../../services/api';
 import type { AuthSession, PhoneCheckResult, StoredAuthSession } from '../../../types/auth';
 import {
   clearStoredSession,
@@ -13,7 +14,8 @@ export type AuthLoadingStage =
   | 'idle'
   | 'checking-phone'
   | 'registering'
-  | 'logging-in';
+  | 'logging-in'
+  | 'deleting-account';
 
 export function useAuthSession({ enabled = true }: { enabled?: boolean } = {}) {
   const [session, setSession] = useState<StoredAuthSession | null>(null);
@@ -98,6 +100,28 @@ export function useAuthSession({ enabled = true }: { enabled?: boolean } = {}) {
     await clearStoredSession();
   }, []);
 
+  const deleteAccount = useCallback(async () => {
+    if (!session?.token) {
+      throw new Error('当前登录状态已失效，请重新登录后再试。');
+    }
+
+    try {
+      setLoadingStage('deleting-account');
+      await authApi.deleteAccount(session.token);
+      setSession(null);
+      await clearStoredSession();
+    } catch (error) {
+      if (error instanceof ApiRequestError && error.status === 401) {
+        setSession(null);
+        await clearStoredSession();
+      }
+
+      throw error;
+    } finally {
+      setLoadingStage('idle');
+    }
+  }, [session?.token]);
+
   return {
     session,
     loadingStage,
@@ -106,5 +130,6 @@ export function useAuthSession({ enabled = true }: { enabled?: boolean } = {}) {
     registerLogin,
     login,
     clearSession,
+    deleteAccount,
   };
 }
