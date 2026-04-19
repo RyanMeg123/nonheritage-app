@@ -84,12 +84,20 @@ export default function App() {
 
         void api
             .getFeaturedCases()
-            .then((serverCases) => {
+            .then(async (serverCases) => {
                 if (!active) {
                     return
                 }
 
-                setFeaturedCases(serverCases)
+                // 服务端优先，本地 AsyncStorage 里的同 id 会被覆盖；本地独有的记录保留。
+                const storedCases = await readStoredFeaturedCases()
+                const byId = new Map<string, FeaturedCase>()
+                for (const item of serverCases) byId.set(item.id, item)
+                for (const item of storedCases) if (!byId.has(item.id)) byId.set(item.id, item)
+                if (!active) {
+                    return
+                }
+                setFeaturedCases(Array.from(byId.values()))
             })
             .catch(() =>
                 readStoredFeaturedCases().then((storedCases) => {

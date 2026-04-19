@@ -11,6 +11,7 @@
  */
 
 import { randomUUID } from 'node:crypto';
+import { jsonrepair } from 'jsonrepair';
 import {
   buildArtisanMatches,
   buildCraftPlan,
@@ -18,6 +19,16 @@ import {
   buildPreviewResult,
   buildStructuredRequirement,
 } from './mock-data.js';
+
+// LLM 返回的 JSON 经常不严格（单引号 / trailing comma / 未加引号 key），
+// 先直接 JSON.parse，失败再用 jsonrepair 修一次。
+function parseLooseJson(text) {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return JSON.parse(jsonrepair(text));
+  }
+}
 import { uploadBuffer } from './oss.js';
 
 // ── aihubmix 配置 ─────────────────────────────────────────────────
@@ -96,7 +107,7 @@ async function callText({ messages, maxTokens = 1500 }) {
   // 提取第一个 JSON 对象块
   const match = text.match(/\{[\s\S]*\}/);
   if (!match) throw new Error(`AI 返回内容无法解析为 JSON：${text.slice(0, 300)}`);
-  return { parsed: JSON.parse(match[0]), raw: text };
+  return { parsed: parseLooseJson(match[0]), raw: text };
 }
 
 // ── 工具函数：调用 doubao 图像生成（图生图 / 多图融合）────────────
@@ -501,7 +512,7 @@ async function callTextArray({ messages, maxTokens = 1500 }) {
   // 提取 JSON 数组或对象
   const match = text.match(/(\[[\s\S]*\]|\{[\s\S]*\})/);
   if (!match) throw new Error(`AI 返回内容无法解析为 JSON：${text.slice(0, 300)}`);
-  return { parsed: JSON.parse(match[0]), raw: text };
+  return { parsed: parseLooseJson(match[0]), raw: text };
 }
 
 // 重新实现 artisanMatcher，使用 callTextArray
